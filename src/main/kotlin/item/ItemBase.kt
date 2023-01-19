@@ -1,7 +1,5 @@
 package item
 
-import game.GameInput
-
 abstract class ItemBase(
     val name: String,
     val description: String,

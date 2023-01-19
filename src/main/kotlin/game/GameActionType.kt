@@ -6,7 +6,7 @@ enum class GameActionType {
     MOVE,
     GET_ITEM,
     DROP_ITEM,
-    SHOW_HANDS,
+    SHOW_EQUIPMENT,
     PUT_ITEM,
     OPEN_CONTAINER,
     CLOSE_CONTAINER,
@@ -34,12 +34,12 @@ enum class GameActionType {
                 "go", "move" -> MOVE
                 "get", "take" -> GET_ITEM
                 "drop" -> DROP_ITEM
-                "hands" -> SHOW_HANDS
+                "equipment" -> SHOW_EQUIPMENT
                 "put" -> PUT_ITEM
                 "close" -> CLOSE_CONTAINER
                 "open" -> OPEN_CONTAINER
                 "equip", "wear" -> EQUIP_ITEM
-                "remove" -> REMOVE_EQUIPMENT
+                "remove", "unequip" -> REMOVE_EQUIPMENT
                 "inventory" -> SHOW_INVENTORY
                 "eat" -> EAT
                 "drink", "quaff" -> DRINK

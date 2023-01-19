@@ -1,6 +1,6 @@
 package item.template
 
-import ItemDrink
+import item.ItemDrink
 
 class ItemTemplateDrink(
     name: String,

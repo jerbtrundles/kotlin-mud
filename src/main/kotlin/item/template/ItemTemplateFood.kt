@@ -1,6 +1,6 @@
 package item.template
 
-import ItemFood
+import item.ItemFood
 
 class ItemTemplateFood(
     name: String,

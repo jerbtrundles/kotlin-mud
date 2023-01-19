@@ -1,4 +1,5 @@
-import item.ItemBase
+package item
+
 import item.template.ItemTemplateFood
 
 class ItemFood(

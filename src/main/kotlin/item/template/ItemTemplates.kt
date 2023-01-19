@@ -7,12 +7,30 @@ object ItemTemplates {
     var drinks = listOf<ItemTemplateDrink>()
     var food = listOf<ItemTemplateFood>()
     var containers = listOf<ItemTemplateContainer>()
+    var weapons = listOf<ItemTemplateWeapon>()
+    var armor = listOf<ItemTemplateArmor>()
 
     fun load(c: Class<() -> Unit>) {
         loadJunk(c)
         loadDrinks(c)
         loadFood(c)
         loadContainers(c)
+        loadWeapons(c)
+        loadArmor(c)
+    }
+
+    private fun loadArmor(c: Class<() -> Unit>) {
+        println("Loading armor...")
+        val json = c.getResourceAsStream("items-armor.json")?.bufferedReader()?.readText()!!
+        armor = Klaxon().parseArray(json)!!
+        println("Done loading armor. We can defend ourselves with ${armor.size} different options.")
+    }
+
+    private fun loadWeapons(c: Class<() -> Unit>) {
+        println("Loading weapons...")
+        val json = c.getResourceAsStream("items-weapon.json")?.bufferedReader()?.readText()!!
+        weapons = Klaxon().parseArray(json)!!
+        println("Done loading weapons. We can kill enemies in ${weapons.size} different ways.")
     }
 
     private fun loadContainers(c: Class<() -> Unit>) {

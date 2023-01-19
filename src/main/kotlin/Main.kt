@@ -12,6 +12,8 @@ fun main() {
     World.getRandomRoom().inventory.items.add(ItemTemplates.drinks.random().createItem())
     World.getRandomRoom().inventory.items.add(ItemTemplates.food.random().createItem())
     World.getRandomRoom().inventory.items.add(ItemTemplates.containers.random().createItem())
+    World.getRandomRoom().inventory.items.add(ItemTemplates.weapons.random().createItem())
+    World.getRandomRoom().inventory.items.add(ItemTemplates.armor.random().createItem())
   }
 
   MyViewModel.onInput("look")
