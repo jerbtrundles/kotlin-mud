@@ -1,0 +1,22 @@
+[
+  {
+    "name": "small smooth stone",
+    "description": "It's a small smooth stone.",
+    "weight": 0.5,
+    "value": 1,
+    "keywords": [
+      "stone",
+      "smooth stone"
+    ]
+  },
+  {
+    "name": "large smooth stone",
+    "description": "It's a large smooth stone.",
+    "weight": 2.0,
+    "value": 3,
+    "keywords": [
+      "stone",
+      "smooth stone"
+    ]
+  }
+]
