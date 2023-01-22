@@ -2,10 +2,17 @@ import entity.EntityAttributes
 import entity.EntityPosture
 import item.ItemArmor
 import item.ItemWeapon
+import world.World
+import world.WorldCoordinates
 
 object Player {
     var name = ""
     val attributes = EntityAttributes()
+    var coordinates = WorldCoordinates(0, 0, 0)
+    var level = 1
+    var experience = 0
+    val currentRoom
+        get() = World.getRoomFromCoordinates(coordinates)
     var posture = EntityPosture.STANDING
     val inventory: Inventory = Inventory()
     var weapon: ItemWeapon? = null

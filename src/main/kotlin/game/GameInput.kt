@@ -18,7 +18,7 @@ class GameInput constructor(
     val action = if (MovementDirection.isDirectionalWord(rawInput)) {
         GameActionType.MOVE
     } else {
-        GameActionType.fromCommandVerbString(words[0])
+        GameActionType.fromString(words[0])
     }
 
     override fun equals(other: Any?): Boolean {

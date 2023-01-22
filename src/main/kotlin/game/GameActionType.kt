@@ -28,9 +28,9 @@ enum class GameActionType {
     QUIT;
 
     companion object {
-        fun fromCommandVerbString(str: String): GameActionType {
+        fun fromString(str: String): GameActionType {
             return when (str) {
-                "look" -> LOOK
+                "look", "l" -> LOOK
                 "go", "move" -> MOVE
                 "get", "take" -> GET_ITEM
                 "drop" -> DROP_ITEM
@@ -40,7 +40,7 @@ enum class GameActionType {
                 "open" -> OPEN_CONTAINER
                 "equip", "wear" -> EQUIP_ITEM
                 "remove", "unequip" -> REMOVE_EQUIPMENT
-                "inventory" -> SHOW_INVENTORY
+                "inventory", "i" -> SHOW_INVENTORY
                 "eat" -> EAT
                 "drink", "quaff" -> DRINK
                 "buy" -> BUY_ITEM
@@ -53,7 +53,7 @@ enum class GameActionType {
                 "attack", "kill" -> ATTACK
                 "health" -> SHOW_HEALTH
                 "search" -> SEARCH
-                "quit", "exit" -> QUIT
+                "quit", "exit", "q", "x" -> QUIT
                 else -> NONE
             }
         }

@@ -1,26 +1,36 @@
 [
   {
     "name": "goblin",
+    "keywords": [],
     "level": 1,
+    "experience": 5,
+    "gold": 5,
     "attributes": {
-      "strength": 5
-    },
-
-    "weight": 4.0,
-    "value": 15,
-    "defense": 10,
-    "keywords": [
-      "armor"
-    ]
+      "strength": 5,
+      "intelligence": 5,
+      "vitality": 5,
+      "speed": 5,
+      "defense": 0,
+      "health": 5,
+      "magic": 0
+    }
   },
   {
-    "name": "half plate",
-    "description": "It's some half plate.",
-    "weight": 40.0,
-    "value": 30,
-    "defense": 20,
+    "name": "lesser orc",
     "keywords": [
-      "plate"
-    ]
+      "orc"
+    ],
+    "level": 2,
+    "experience": 8,
+    "gold": 12,
+    "attributes": {
+      "strength": 10,
+      "intelligence": 5,
+      "vitality": 10,
+      "speed": 5,
+      "defense": 5,
+      "health": 10,
+      "magic": 0
+    }
   }
 ]

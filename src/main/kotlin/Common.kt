@@ -20,10 +20,18 @@ object Common {
     }
 }
 
-fun String.withIndefiniteArticle(): String {
+fun String.withIndefiniteArticle(capitalized: Boolean = false): String {
     return if ("aeiou".contains(this[0])) {
-        "an $this"
+        if (capitalized) {
+            "An $this"
+        } else {
+            "an $this"
+        }
     } else {
-        "a $this"
+        if (capitalized) {
+            "A $this"
+        } else {
+            "a $this"
+        }
     }
 }

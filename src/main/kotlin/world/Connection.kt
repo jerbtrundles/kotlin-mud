@@ -2,17 +2,20 @@ package world
 
 import com.beust.klaxon.Json
 import game.GameInput
+import game.MovementDirection
 
 open class Connection(
-    @Json(name = "coordinates")
+    @Json(name = "connection-coordinates")
     val coordinatesString: String,
-    @Json(name = "input")
+    @Json(name = "connection-input")
     val matchInputString: String,
 ) {
     @Json(ignored = true)
     val coordinates = WorldCoordinates.parseFromString(coordinatesString)
     @Json(ignored = true)
     val matchInput = GameInput(matchInputString)
+    @Json(ignored = true)
+    val direction = MovementDirection.parseFromString(matchInput.suffix)
 
     override fun toString() = "${coordinatesString}\n${matchInputString}"
 

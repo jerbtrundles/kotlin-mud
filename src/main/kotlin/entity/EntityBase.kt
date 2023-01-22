@@ -1,37 +1,93 @@
 package entity
 
-import item.ItemBase
+import game.Game
+import kotlinx.coroutines.delay
+import withIndefiniteArticle
+import world.Connection
+import world.Room
 import world.World
-import world.WorldCoordinates
-import javax.swing.text.html.parser.Entity
+import kotlin.random.Random
 
 class EntityBase(
     // level and attributes remain constant
     val level: Int,
     val name: String,
+    val experience: Int,
+    val gold: Int,
     val attributes: EntityAttributes,
-    // entities can move
-    var coordinates: WorldCoordinates,
-    val inventory: EntityInventory
+    val inventory: EntityInventory,
+    var currentRoom: Room = World.zero,
+    val keywords: List<String>
 ) {
-    var posture = EntityPosture.STANDING
-    val currentRoom
-        get() = World.getRoomFromCoordinates(coordinates)
+    val nameForCollectionString
+        get() = if(isDead) {
+            "dead $name"
+        } else {
+            name
+        }
+    var posture: EntityPosture = EntityPosture.STANDING
+    val arriveString = "${name.withIndefiniteArticle(capitalized = true)} has arrived."
+    fun departString(connection: Connection): String {
+        // The goblin heads east.
+        return "The $name heads ${connection.direction.toString().lowercase()}."
+
+        // TODO: The goblin heads through the gates.
+    }
+
+    val coordinates
+        get() = currentRoom.coordinates
 
     val isDead
         get() = attributes.currentHealth <= 0
 
     var hasBeenSearched = false
 
-    fun cloneAtCoordinates(
-        coordinates: WorldCoordinates
-    ): EntityBase {
-        return EntityBase(
-            level = this.level,
-            name = this.name,
-            attributes = this.attributes,
-            coordinates = coordinates,
-            inventory = this.inventory,
-        )
+    suspend fun goLiveYourLifeAndBeFree(initialRoom: Room) {
+        initialRoom.addEntity(this)
+
+        while (!hasBeenSearched && Game.running) {
+            val repeat = Random.nextInt(50, 80)
+            repeat(repeat) {
+                if (Game.running && !hasBeenSearched) {
+                    delay(100)
+                }
+            }
+
+            if (!isDead) {
+                doAction()
+            }
+        }
+
+        if (Game.running) {
+            currentRoom.announce("The body of the $name crumbles to dust.")
+        }
+    }
+
+    private fun doAction() {
+        doRandomMove()
+
+        /*when (Random.nextInt(2)) {
+            0 -> currentRoom.announce("\"Mrrrrrrr...\" says the $name.")
+            1 -> doRandomMove()
+            else -> {
+                Game.print("EIHGHIEGOWSJDSOIJF")
+            }
+        }*/
+    }
+
+    private fun doRandomMove() {
+        val connection = currentRoom.connections.random()
+        val newRoom = World.getRoomFromCoordinates(connection.coordinates)
+
+        // leaving
+        currentRoom.entities.remove(this)
+        currentRoom.announce(departString(connection))
+        // move
+        currentRoom = newRoom
+        // arriving
+        currentRoom.addEntity(this)
+
+        // if directional
+        // otherwise (The goblin goes through the gates.)
     }
 }
