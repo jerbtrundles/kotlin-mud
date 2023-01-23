@@ -32,5 +32,21 @@
       "health": 10,
       "magic": 0
     }
+  },
+  {
+    "name": "black widow spider",
+    "keywords": ["spider","black widow"],
+    "level": 6,
+    "experience": 60,
+    "gold": 25,
+    "attributes": {
+      "strength": 14,
+      "intelligence": 3,
+      "vitality": 12,
+      "speed": 9,
+      "defense": 9,
+      "health": 45,
+      "magic": 0
+    }
   }
 ]

@@ -16,8 +16,12 @@ object World {
     fun getRandomRoom() = regions.random().subregions.random().rooms.random()
 
     fun load(c: Class<() -> Unit>) {
-        val json = c.getResourceAsStream("world.json")?.bufferedReader()?.readText()!!
-        regions = Klaxon().parseArray(json)!!
+        try {
+            val json = c.getResourceAsStream("world.json")?.bufferedReader()?.readText()!!
+            regions = Klaxon().parseArray(json)!!
+        } catch (e: Exception) {
+            println(e.message)
+        }
     }
 
     var regions = listOf<Region>()
