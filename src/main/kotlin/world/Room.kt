@@ -64,7 +64,7 @@ class Room(
 
     fun announce(str: String) {
         if (Player.currentRoom == this) {
-            Game.print("${coordinatesString} - $str")
+            Game.println("${coordinatesString} - $str")
         }
     }
 

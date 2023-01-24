@@ -25,6 +25,7 @@ class EntityBase(
         } else {
             name
         }
+
     var posture: EntityPosture = EntityPosture.STANDING
     val arriveString = "${name.withIndefiniteArticle(capitalized = true)} has arrived."
     fun departString(connection: Connection): String {
@@ -46,7 +47,7 @@ class EntityBase(
         initialRoom.addEntity(this)
 
         while (!hasBeenSearched && Game.running) {
-            val repeat = Random.nextInt(50, 80)
+            val repeat = Random.nextInt(20, 50)
             repeat(repeat) {
                 if (Game.running && !hasBeenSearched) {
                     delay(100)

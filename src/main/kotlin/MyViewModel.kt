@@ -35,16 +35,16 @@ object MyViewModel {
 
     private fun doLookAtItemWithKeyword(word: String) {
         getItemWithKeyword(word)?.run {
-            Game.print(description)
+            Game.println(description)
         } ?: doUnknown()
     }
 
     private fun doLookInItemWithKeyword(word: String) {
         getTypedItemByKeyword<ItemContainer>(word)?.run {
             if (closed) {
-                Game.print("The $name is closed.")
+                Game.println("The $name is closed.")
             } else {
-                Game.print(inventoryString)
+                Game.println(inventoryString)
             }
         } ?: doUnknown()
     }
@@ -55,8 +55,8 @@ object MyViewModel {
             val subregion = region.subregions[subregion]
             val room = subregion.rooms[room]
 
-            Game.print("[$region - $subregion]")
-            Game.print(room.toString())
+            Game.println("[$region - $subregion]")
+            Game.println(room.toString())
         }
     }
     // endregion
@@ -64,28 +64,28 @@ object MyViewModel {
     // region player posture
     private fun doStand() {
         if (Player.posture == EntityPosture.STANDING) {
-            Game.print("You're already standing.")
+            Game.println("You're already standing.")
         } else {
             Player.posture = EntityPosture.STANDING
-            Game.print("You stand up.")
+            Game.println("You stand up.")
         }
     }
 
     private fun doSit() {
         if (Player.posture == EntityPosture.SITTING) {
-            Game.print("You're already sitting.")
+            Game.println("You're already sitting.")
         } else {
             Player.posture = EntityPosture.SITTING
-            Game.print("You sit down.")
+            Game.println("You sit down.")
         }
     }
 
     private fun doKneel() {
         if (Player.posture == EntityPosture.KNEELING) {
-            Game.print("You're already kneeling.")
+            Game.println("You're already kneeling.")
         } else {
             Player.posture = EntityPosture.KNEELING
-            Game.print("You kneel.")
+            Game.println("You kneel.")
         }
     }
     // endregion
@@ -101,12 +101,12 @@ object MyViewModel {
         val container = getTypedItemByKeyword<ItemContainer>(gameInput.words[3])
         container?.run {
             if (closed) {
-                Game.print("The $name is closed.")
+                Game.println("The $name is closed.")
             } else {
                 getItemWithKeyword(gameInput.words[1])?.run {
                     container.inventory.items.add(this)
                     Player.inventory.items.remove(this)
-                    Game.print("You put the $name into the ${container.name}.")
+                    Game.println("You put the $name into the ${container.name}.")
                 } ?: doUnknown()
             }
         } ?: doUnknown()
@@ -116,7 +116,7 @@ object MyViewModel {
         Player.inventory.getItemByKeyword(gameInput.suffix)?.run {
             Player.inventory.items.remove(this)
             Player.currentRoom.inventory.items.add(this)
-            Game.print("You drop $nameWithIndefiniteArticle.")
+            Game.println("You drop $nameWithIndefiniteArticle.")
         } ?: doUnknown()
     }
 
@@ -124,7 +124,7 @@ object MyViewModel {
         Player.currentRoom.inventory.getItemByKeyword(gameInput.suffix)?.run {
             Player.inventory.items.add(this)
             Player.currentRoom.inventory.items.remove(this)
-            Game.print("You pick up $nameWithIndefiniteArticle.")
+            Game.println("You pick up $nameWithIndefiniteArticle.")
         } ?: doUnknown()
     }
 
@@ -140,14 +140,14 @@ object MyViewModel {
             inventory.getItemByKeyword(gameInput.words[1])?.run {
                 Player.inventory.items.add(this)
                 container.inventory.items.remove(this)
-                Game.print("You take the $name from the ${container.name}.")
+                Game.println("You take the $name from the ${container.name}.")
             } ?: doUnknown()
         } ?: doUnknown()
     }
 
     private fun doGetItem(gameInput: GameInput) {
         when (gameInput.words.size) {
-            1 -> Game.print("Get what?")
+            1 -> Game.println("Get what?")
             2 -> doGetItemFromRoom(gameInput)
             4 -> doGetItemFromContainer(gameInput)
             else -> doUnknown()
@@ -159,10 +159,10 @@ object MyViewModel {
     private fun doEat(gameInput: GameInput) {
         getTypedItemByKeyword<ItemFood>(gameInput.suffix)?.run {
             if (--bites == 0) {
-                Game.print("You take a bite of your $name. That was the last of it.")
+                Game.println("You take a bite of your $name. That was the last of it.")
                 Player.inventory.items.remove(this)
             } else {
-                Game.print(
+                Game.println(
                     "You take a bite of your $name. You have $bites " +
                             if (bites > 1) {
                                 "bites"
@@ -177,10 +177,10 @@ object MyViewModel {
     private fun doDrink(gameInput: GameInput) {
         getTypedItemByKeyword<ItemDrink>(gameInput.suffix)?.run {
             if (--quaffs == 0) {
-                Game.print("You sip from your $name. That was the last of it.")
+                Game.println("You sip from your $name. That was the last of it.")
                 Player.inventory.items.remove(this)
             } else {
-                Game.print(
+                Game.println(
                     "You sip from your $name. You have $quaffs " +
                             if (quaffs > 1) {
                                 "sips"
@@ -198,9 +198,9 @@ object MyViewModel {
         getTypedItemByKeyword<ItemContainer>(gameInput.suffix)?.run {
             if (closed) {
                 closed = false
-                Game.print("You open the $name.")
+                Game.println("You open the $name.")
             } else {
-                Game.print("The $name is already open.")
+                Game.println("The $name is already open.")
             }
         } ?: doUnknown()
     }
@@ -208,20 +208,20 @@ object MyViewModel {
     private fun doCloseContainer(gameInput: GameInput) {
         getTypedItemByKeyword<ItemContainer>(gameInput.suffix)?.run {
             if (closed) {
-                Game.print("The $name is already closed.")
+                Game.println("The $name is already closed.")
             } else {
                 closed = true
-                Game.print("You close the $name.")
+                Game.println("You close the $name.")
             }
         } ?: doUnknown()
     }
     // endregion
 
     // region single-line handlers
-    private fun doShowGold() = Game.print(Player.goldString)
-    private fun doShowInventory() = Game.print(Player.inventoryString)
-    private fun doShowHealth() = Game.print(Player.healthString)
-    private fun doUnknown() = Game.print("I don't know, boss. Try something else.")
+    private fun doShowGold() = Game.println(Player.goldString)
+    private fun doShowInventory() = Game.println(Player.inventoryString)
+    private fun doShowHealth() = Game.println(Player.healthString)
+    private fun doUnknown() = Game.println("I don't know, boss. Try something else.")
     // endregion
 
     // region inventory helpers
@@ -239,15 +239,15 @@ object MyViewModel {
     // region equip/unequip
     private fun doShowEquipment(gameInput: GameInput) {
         if (Player.weapon != null) {
-            Game.print("You have ${Player.weapon!!.nameWithIndefiniteArticle} equipped.")
+            Game.println("You have ${Player.weapon!!.nameWithIndefiniteArticle} equipped.")
         } else {
-            Game.print("You don't have a weapon equipped.")
+            Game.println("You don't have a weapon equipped.")
         }
 
         if (Player.armor != null) {
-            Game.print("You have ${Player.armor!!.nameWithIndefiniteArticle} equipped.")
+            Game.println("You have ${Player.armor!!.nameWithIndefiniteArticle} equipped.")
         } else {
-            Game.print("You don't have any armor equipped.")
+            Game.println("You don't have any armor equipped.")
         }
     }
 
@@ -256,12 +256,12 @@ object MyViewModel {
             val weapon = Player.weapon!!
             Player.inventory.items.add(weapon)
             Player.weapon = null
-            Game.print("You remove the ${weapon.name}.")
+            Game.println("You remove the ${weapon.name}.")
         } else if (Player.armor != null && Player.armor!!.keywords.contains(gameInput.words[1])) {
             val armor = Player.armor!!
             Player.inventory.items.add(armor)
             Player.armor = null
-            Game.print("You remove the ${armor.name}.")
+            Game.println("You remove the ${armor.name}.")
         } else {
             doUnknown()
         }
@@ -285,41 +285,41 @@ object MyViewModel {
 
     private fun doEquipWeaponFromCurrentRoom(weapon: ItemWeapon) {
         if (Player.weapon != null) {
-            Game.print("You already have ${Player.weapon!!.nameWithIndefiniteArticle} equipped.")
+            Game.println("You already have ${Player.weapon!!.nameWithIndefiniteArticle} equipped.")
         } else {
             Player.weapon = weapon
             Player.currentRoom.inventory.items.remove(weapon)
-            Game.print("You pick up and equip the ${weapon.name}.")
+            Game.println("You pick up and equip the ${weapon.name}.")
         }
     }
 
     private fun doEquipArmorFromCurrentRoom(armor: ItemArmor) {
         if (Player.armor != null) {
-            Game.print("You already have ${Player.armor!!.nameWithIndefiniteArticle} equipped.")
+            Game.println("You already have ${Player.armor!!.nameWithIndefiniteArticle} equipped.")
         } else {
             Player.armor = armor
             Player.currentRoom.inventory.items.remove(armor)
-            Game.print("You pick up and equip the ${armor.name}.")
+            Game.println("You pick up and equip the ${armor.name}.")
         }
     }
 
     private fun doEquipWeaponFromPlayerInventory(weapon: ItemWeapon) {
         if (Player.weapon != null) {
-            Game.print("You already have ${Player.weapon!!.nameWithIndefiniteArticle} equipped.")
+            Game.println("You already have ${Player.weapon!!.nameWithIndefiniteArticle} equipped.")
         } else {
             Player.weapon = weapon
             Player.inventory.items.remove(weapon)
-            Game.print("You equip the ${weapon.name} from your inventory.")
+            Game.println("You equip the ${weapon.name} from your inventory.")
         }
     }
 
     private fun doEquipArmorFromPlayerInventory(armor: ItemArmor) {
         if (Player.armor != null) {
-            Game.print("You already have ${Player.armor!!.nameWithIndefiniteArticle} equipped.")
+            Game.println("You already have ${Player.armor!!.nameWithIndefiniteArticle} equipped.")
         } else {
             Player.armor = armor
             Player.inventory.items.remove(armor)
-            Game.print("You equip the ${armor.name} from your inventory.")
+            Game.println("You equip the ${armor.name} from your inventory.")
         }
     }
     // endregion
@@ -376,15 +376,15 @@ object MyViewModel {
 
     // region unimplemented
     private fun doSellItem(gameInput: GameInput) {
-        Game.print("sell item")
+        Game.println("sell item")
     }
 
     private fun doPriceItem(gameInput: GameInput) {
-        Game.print("price item")
+        Game.println("price item")
     }
 
     private fun doBuyItem(gameInput: GameInput) {
-        Game.print("buy item")
+        Game.println("buy item")
     }
     // endregion
 

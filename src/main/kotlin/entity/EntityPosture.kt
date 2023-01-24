@@ -3,5 +3,7 @@ package entity
 enum class EntityPosture {
     STANDING,
     SITTING,
-    KNEELING
+    KNEELING,
+    LYING_DOWN,
+    FLYING
 }

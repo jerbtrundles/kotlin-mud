@@ -21,44 +21,44 @@ object ItemTemplates {
     }
 
     private fun loadArmor(c: Class<() -> Unit>) {
-        Game.print("Loading armor...")
+        Debug.println("Loading armor...")
         val json = c.getResourceAsStream("items-armor.json")?.bufferedReader()?.readText()!!
         armor = Klaxon().parseArray(json)!!
-        Game.print("Done loading armor. We can defend ourselves with ${armor.size} different options.")
+        Debug.println("Done loading armor. We can defend ourselves with ${armor.size} different options.")
     }
 
     private fun loadWeapons(c: Class<() -> Unit>) {
-        Game.print("Loading weapons...")
+        Debug.println("Loading weapons...")
         val json = c.getResourceAsStream("items-weapon.json")?.bufferedReader()?.readText()!!
         weapons = Klaxon().parseArray(json)!!
-        Game.print("Done loading weapons. We can kill enemies in ${weapons.size} different ways.")
+        Debug.println("Done loading weapons. We can kill enemies in ${weapons.size} different ways.")
     }
 
     private fun loadContainers(c: Class<() -> Unit>) {
-        Game.print("Loading containers...")
+        Debug.println("Loading containers...")
         val json = c.getResourceAsStream("items-container.json")?.bufferedReader()?.readText()!!
         containers = Klaxon().parseArray(json)!!
-        Game.print("Done loading containers. We can hold things in ${containers.size} types of containers.")
+        Debug.println("Done loading containers. We can hold things in ${containers.size} types of containers.")
     }
 
     private fun loadFood(c: Class<() -> Unit>) {
-        Game.print("Loading food...")
+        Debug.println("Loading food...")
         val json = c.getResourceAsStream("items-food.json")?.bufferedReader()?.readText()!!
         food = Klaxon().parseArray(json)!!
-        Game.print("Done loading food. We gots ${food.size} types of things to eat.")
+        Debug.println("Done loading food. We gots ${food.size} types of things to eat.")
     }
 
     private fun loadJunk(c: Class<() -> Unit>) {
-        Game.print("Loading junk...")
+        Debug.println("Loading junk...")
         val json = c.getResourceAsStream("items-junk.json")?.bufferedReader()?.readText()!!
         junk = Klaxon().parseArray(json)!!
-        Game.print("Done loading junk. Size of junk is ${junk.size}.")
+        Debug.println("Done loading junk. Size of junk is ${junk.size}.")
     }
 
     private fun loadDrinks(c: Class<() -> Unit>) {
-        Game.print("Loading drinks...")
+        Debug.println("Loading drinks...")
         val json = c.getResourceAsStream("items-drink.json")?.bufferedReader()?.readText()!!
         drinks = Klaxon().parseArray(json)!!
-        Game.print("Done loading drinks. We have ${drinks.size} drinks.")
+        Debug.println("Done loading drinks. We have ${drinks.size} drinks.")
     }
 }

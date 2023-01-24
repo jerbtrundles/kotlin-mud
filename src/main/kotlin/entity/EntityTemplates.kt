@@ -11,9 +11,11 @@ object EntityTemplates {
     }
 
     private fun loadEntities(c: Class<() -> Unit>) {
-        Game.print("Loading entities...")
+        Debug.println("Loading entities...")
+
         val json = c.getResourceAsStream("entities.json")?.bufferedReader()?.readText()!!
         entities = Klaxon().parseArray(json)!!
-        Game.print("Done loading entities. ${entities.size} types of enemies are out to get us!")
+
+        Debug.println("Done loading entities. ${entities.size} types of enemies are out to get us!")
     }
 }
