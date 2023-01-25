@@ -45,7 +45,7 @@ enum class GameActionType {
                 "drink", "quaff" -> DRINK
                 "buy" -> BUY_ITEM
                 "sell" -> SELL_ITEM
-                "price" -> PRICE_ITEM
+                "assess", "price" -> PRICE_ITEM
                 "gold" -> SHOW_GOLD
                 "sit" -> SIT
                 "stand" -> STAND

@@ -1,28 +1,20 @@
 package world
 
 import Inventory
-import com.beust.klaxon.Json
 import entity.EntityBase
 import game.Game
 import game.GameActionType
 import java.util.UUID
 
-class Room(
-    @Json(name = "room-id")
+open class Room(
     val id: Int,
-    @Json(name = "room-coordinates")
-    val coordinatesString: String,
-    @Json(name = "room-description")
+    val coordinates: WorldCoordinates,
     val description: String,
-    @Json(name = "room-connections")
     val connections: List<Connection>,
-    @Json(ignored = true)
     val inventory: Inventory = Inventory(),
-    @Json(ignored = true)
     val entities: MutableList<EntityBase> = mutableListOf()
 ) {
-    val uuid = UUID.randomUUID()
-    val coordinates = WorldCoordinates.parseFromString(coordinatesString)
+    private val uuid = UUID.randomUUID()!!
 
     private val directionalExitsString = "Obvious exits: " +
             connections.filter { connection ->
@@ -31,7 +23,7 @@ class Room(
                 connection.matchInput.suffix
             }
 
-    val entitiesString: String
+    private val entitiesString: String
         get() = if (entities.isEmpty()) {
             ""
         } else {
@@ -41,7 +33,7 @@ class Room(
                     ) + ".\n"
         }
 
-    val inventoryString: String
+    private val inventoryString: String
         get() = if (inventory.items.isEmpty()) {
             ""
         } else {
@@ -64,9 +56,10 @@ class Room(
 
     fun announce(str: String) {
         if (Player.currentRoom == this) {
-            Game.println("${coordinatesString} - $str")
+            Game.println(str)
         }
     }
 
     override fun equals(other: Any?) = (uuid == (other as Room).uuid)
+    override fun hashCode(): Int = uuid.hashCode()
 }

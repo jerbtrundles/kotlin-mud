@@ -7,8 +7,8 @@ abstract class ItemBase(
     val value: Int,
     val keywords: List<String>
 ) {
+    val sellValue = (value / 2).coerceAtLeast(1)
     val nameWithIndefiniteArticle = if(isVowel(name[0])) { "an $name" } else { "a $name" }
-    fun matches(str: String) = keywords.contains(str)
 
     companion object {
         const val vowels: String = "aeiou"

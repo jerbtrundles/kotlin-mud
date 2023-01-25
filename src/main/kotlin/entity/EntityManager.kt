@@ -8,7 +8,7 @@ import world.World
 
 object EntityManager {
     suspend fun start() {
-        val maxEntities = 20
+        val maxEntities = 0
         val allEntities = mutableListOf<EntityBase>()
 
         coroutineScope {

@@ -1,8 +1,11 @@
 package world
 
 import com.beust.klaxon.Klaxon
+import world.template.RegionTemplate
 
 object World {
+    var regions = listOf<Region>()
+
     val zero
         get() = regions[0].subregions[0].rooms[0]
     fun getRoomFromCoordinates(coordinates: WorldCoordinates): Room {
@@ -18,11 +21,10 @@ object World {
     fun load(c: Class<() -> Unit>) {
         try {
             val json = c.getResourceAsStream("world.json")?.bufferedReader()?.readText()!!
-            regions = Klaxon().parseArray(json)!!
+            val regionTemplates = Klaxon().parseArray<RegionTemplate>(json)!!
+            regions = regionTemplates.map { regionTemplate -> regionTemplate.toRegion() }
         } catch (e: Exception) {
             println(e.message)
         }
     }
-
-    var regions = listOf<Region>()
 }

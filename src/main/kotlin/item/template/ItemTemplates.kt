@@ -1,7 +1,6 @@
 package item.template
 
 import com.beust.klaxon.Klaxon
-import game.Game
 
 object ItemTemplates {
     var junk = listOf<ItemTemplateJunk>()
@@ -60,5 +59,15 @@ object ItemTemplates {
         val json = c.getResourceAsStream("items-drink.json")?.bufferedReader()?.readText()!!
         drinks = Klaxon().parseArray(json)!!
         Debug.println("Done loading drinks. We have ${drinks.size} drinks.")
+    }
+
+    fun find(itemString: String): ItemTemplate {
+        return weapons.firstOrNull { template -> template.matches(itemString) }
+            ?: armor.firstOrNull { template -> template.matches(itemString) }
+            ?: food.firstOrNull { template -> template.matches(itemString) }
+            ?: drinks.firstOrNull { template -> template.matches(itemString) }
+            ?: junk.firstOrNull { template -> template.matches(itemString) }
+            ?: containers.firstOrNull { template -> template.matches(itemString) }
+            ?: throw Exception("No item template match for keyword: $itemString. This should never happen.")
     }
 }

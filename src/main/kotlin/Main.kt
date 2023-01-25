@@ -4,6 +4,7 @@ import game.Game
 import item.template.ItemTemplates
 import kotlinx.coroutines.*
 import world.World
+import world.template.ShopTemplates
 
 fun main() {
     init()
@@ -25,9 +26,14 @@ fun init() {
 
 fun loadResources() {
     val c = {}.javaClass
-    World.load(c)
+    // load items first; no other dependencies
     ItemTemplates.load(c)
+    // load entities next; depends on items
     EntityTemplates.load(c)
+    // load shops next; depends on items
+    ShopTemplates.load(c)
+    // load world next; depends on shops
+    World.load(c)
 }
 // endregion
 

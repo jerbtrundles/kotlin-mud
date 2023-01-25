@@ -3,6 +3,7 @@ import game.Game
 import game.GameActionType
 import game.GameInput
 import item.*
+import world.RoomShop
 import world.World
 
 object MyViewModel {
@@ -225,15 +226,13 @@ object MyViewModel {
     // endregion
 
     // region inventory helpers
-    private fun getItemWithKeyword(word: String): ItemBase? {
-        return Player.inventory.getItemByKeyword(word)
+    private fun getItemWithKeyword(word: String): ItemBase? =
+        Player.inventory.getItemByKeyword(word)
             ?: Player.currentRoom.inventory.getItemByKeyword(word)
-    }
 
-    private inline fun <reified T> getTypedItemByKeyword(word: String): T? {
-        return Player.inventory.getTypedItemByKeyword<T>(word)
+    private inline fun <reified T> getTypedItemByKeyword(word: String): T? =
+        Player.inventory.getTypedItemByKeyword<T>(word)
             ?: Player.currentRoom.inventory.getTypedItemByKeyword<T>(word)
-    }
     // endregion
 
     // region equip/unequip
@@ -355,6 +354,7 @@ object MyViewModel {
             }
         } ?: doUnknown()
     }
+
     private fun doSearch(gameInput: GameInput) {
         val entity = Player.currentRoom.entities.firstOrNull { entity ->
             entity.isDead
@@ -376,11 +376,23 @@ object MyViewModel {
 
     // region unimplemented
     private fun doSellItem(gameInput: GameInput) {
-        Game.println("sell item")
+        (Player.currentRoom as? RoomShop)?.run {
+            Player.inventory.getItemByKeyword(gameInput.suffix)?.run {
+                println("You want to sell this here $name. It's worth $value gold, but you'll sell at half that, or ${sellValue}.")
+            }
+        } ?: doRoomIsNotShop()
+    }
+
+    private fun doRoomIsNotShop() {
+        println("You don't see a merchant anywhere around here.")
     }
 
     private fun doPriceItem(gameInput: GameInput) {
-        Game.println("price item")
+        (Player.currentRoom as? RoomShop)?.run {
+            Player.inventory.getItemByKeyword(gameInput.suffix)?.run {
+                println("You can sell the $name for $sellValue gold.")
+            } ?: doUnknown()
+        } ?: doRoomIsNotShop()
     }
 
     private fun doBuyItem(gameInput: GameInput) {
