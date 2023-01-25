@@ -18,6 +18,7 @@ enum class GameActionType {
     BUY_ITEM,
     SELL_ITEM,
     PRICE_ITEM,
+    LIST_ITEMS,
     SHOW_GOLD,
     SIT,
     STAND,
@@ -46,6 +47,7 @@ enum class GameActionType {
                 "buy" -> BUY_ITEM
                 "sell" -> SELL_ITEM
                 "assess", "price" -> PRICE_ITEM
+                "list" -> LIST_ITEMS
                 "gold" -> SHOW_GOLD
                 "sit" -> SIT
                 "stand" -> STAND

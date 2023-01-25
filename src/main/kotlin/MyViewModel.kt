@@ -374,12 +374,26 @@ object MyViewModel {
     }
     // endregion
 
-    // region unimplemented
+    // region shops
     private fun doSellItem(gameInput: GameInput) {
         (Player.currentRoom as? RoomShop)?.run {
             Player.inventory.getItemByKeyword(gameInput.suffix)?.run {
-                println("You want to sell this here $name. It's worth $value gold, but you'll sell at half that, or ${sellValue}.")
+                Player.inventory.items.remove(this)
+                Player.gold += sellValue
+                println("You sell your $name to the merchant and receive $sellValue gold.")
+                println("You now have ${Player.gold} gold.")
+            } ?: doUnknown()
+        } ?: doRoomIsNotShop()
+    }
+
+    private fun doListItems() {
+        (Player.currentRoom as? RoomShop)?.run {
+            val sb = StringBuilder()
+            sb.appendLine("This shop has the following items for sale:")
+            soldItemTemplates.forEach { template ->
+                sb.appendLine(template.shopItemString)
             }
+            println(sb.toString())
         } ?: doRoomIsNotShop()
     }
 
@@ -390,13 +404,27 @@ object MyViewModel {
     private fun doPriceItem(gameInput: GameInput) {
         (Player.currentRoom as? RoomShop)?.run {
             Player.inventory.getItemByKeyword(gameInput.suffix)?.run {
-                println("You can sell the $name for $sellValue gold.")
+                println("You can sell the $name here for $sellValue gold.")
             } ?: doUnknown()
         } ?: doRoomIsNotShop()
     }
 
     private fun doBuyItem(gameInput: GameInput) {
-        Game.println("buy item")
+        (Player.currentRoom as? RoomShop)?.run {
+            soldItemTemplates.firstOrNull { template ->
+                template.matches(gameInput.suffix)
+            }?.run {
+                if(Player.gold >= value) {
+                    val item = createItem()
+                    Player.gold -= item.value
+                    println("You purchase ${item.nameWithIndefiniteArticle} from the merchant for ${item.value} gold.")
+                    println("You have ${Player.gold} gold left.")
+                    Player.inventory.items.add(item)
+                } else {
+                    println("You don't have enough gold (${Player.gold}) to buy the $name ($value).")
+                }
+            } ?: doUnknown()
+        } ?: doRoomIsNotShop()
     }
     // endregion
 
@@ -429,6 +457,7 @@ object MyViewModel {
             GameActionType.MOVE -> doMove(gameInput)
 
             GameActionType.PRICE_ITEM -> doPriceItem(gameInput)
+            GameActionType.LIST_ITEMS -> doListItems()
 
             GameActionType.SEARCH -> doSearch(gameInput)
             GameActionType.SHOW_GOLD -> doShowGold()

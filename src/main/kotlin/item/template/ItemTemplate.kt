@@ -12,6 +12,7 @@ abstract class ItemTemplate(
     val value: Int,
     val keywords: List<String>
 ) {
+    val shopItemString = "- $name - $value gold"
     abstract fun createItem(): ItemBase
     fun createItemAt(room: Room) = room.inventory.items.add(createItem())
     fun matches(str: String): Boolean {

@@ -10,6 +10,6 @@ class RoomShop(
     description: String,
     connections: List<Connection>,
     inventory: Inventory = Inventory(),
-    soldItemTemplates: MutableList<ItemTemplate>,
+    val soldItemTemplates: MutableList<ItemTemplate>,
     entities: MutableList<EntityBase> = mutableListOf(),
 ): Room(id, coordinates, description, connections, inventory, entities)
