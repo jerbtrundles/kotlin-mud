@@ -28,6 +28,8 @@ fun loadResources() {
     val c = {}.javaClass
     // load items first; no other dependencies
     ItemTemplates.load(c)
+    // load npc names and jobs next; no other dependencies
+    EntityManager.load(c)
     // load entities next; depends on items
     EntityTemplates.load(c)
     // load shops next; depends on items

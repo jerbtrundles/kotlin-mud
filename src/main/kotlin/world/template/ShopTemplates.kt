@@ -7,8 +7,7 @@ object ShopTemplates {
 
     fun load(c: Class<() -> Unit>) {
         try {
-            val json = c.getResourceAsStream("shops.json")?.bufferedReader()?.readText()!!
-            templates = Klaxon().parseArray(json)!!
+            templates = Common.parseArrayFromJson(c, "shops.json")
         } catch (e: Exception) {
             println(e.message)
         }

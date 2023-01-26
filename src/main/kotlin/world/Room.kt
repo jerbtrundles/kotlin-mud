@@ -1,7 +1,8 @@
 package world
 
 import Inventory
-import entity.EntityBase
+import entity.EntityFriendlyNpc
+import entity.EntityMonster
 import game.Game
 import game.GameActionType
 import java.util.UUID
@@ -12,7 +13,8 @@ open class Room(
     val description: String,
     val connections: List<Connection>,
     val inventory: Inventory = Inventory(),
-    val entities: MutableList<EntityBase> = mutableListOf()
+    val monsters: MutableList<EntityMonster> = mutableListOf(),
+    val npcs: MutableList<EntityFriendlyNpc> = mutableListOf()
 ) {
     private val uuid = UUID.randomUUID()!!
 
@@ -23,13 +25,24 @@ open class Room(
                 connection.matchInput.suffix
             }
 
-    private val entitiesString: String
-        get() = if (entities.isEmpty()) {
+    private val npcsString: String
+        get() = if(npcs.isEmpty()) {
             ""
         } else {
             "You also see " +
                     Common.collectionString(
-                        entities.map { entity -> entity.nameForCollectionString }
+                        itemStrings = npcs.map { npc -> npc.nameForCollectionString },
+                        includeIndefiniteArticles = false
+                    ) + ".\n"
+        }
+
+    private val monstersString: String
+        get() = if (monsters.isEmpty()) {
+            ""
+        } else {
+            "You also see " +
+                    Common.collectionString(
+                        monsters.map { monster -> monster.nameForCollectionString }
                     ) + ".\n"
         }
 
@@ -44,14 +57,20 @@ open class Room(
         val sb = StringBuilder()
         sb.appendLine(description)
         sb.append(inventoryString)
-        sb.append(entitiesString)
+        sb.append(npcsString)
+        sb.append(monstersString)
         sb.append(directionalExitsString)
         return sb.toString()
     }
 
-    fun addEntity(entity: EntityBase) {
-        entities.add(entity)
-        announce(entity.arriveString)
+    fun addMonster(monster: EntityMonster) {
+        monsters.add(monster)
+        announce(monster.arriveString)
+    }
+
+    fun addNpc(npc: EntityFriendlyNpc) {
+        npcs.add(npc)
+        announce(npc.arriveString)
     }
 
     fun announce(str: String) {

@@ -2,18 +2,16 @@ package entity
 
 import com.beust.klaxon.Json
 
-class EntityTemplate(
+class EntityMonsterTemplate(
     val name: String,
     // level and attributes remain constant
     val level: Int,
     val attributes: EntityAttributes,
     val keywords: List<String>,
     val experience: Int,
-    val gold: Int,
-    @Json(ignored = true)
-    val inventory: EntityInventory = EntityInventory()
+    val gold: Int
 ) {
-    fun create() = EntityBase(
+    fun create() = EntityMonster(
         level = this.level,
         name = this.name,
         experience = this.experience,
@@ -27,7 +25,6 @@ class EntityTemplate(
             maximumHealth = this.attributes.maximumHealth,
             maximumMagic = this.attributes.maximumMagic
         ),
-        inventory = this.inventory,
         keywords = this.keywords
     )
 }

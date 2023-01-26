@@ -236,7 +236,7 @@ object MyViewModel {
     // endregion
 
     // region equip/unequip
-    private fun doShowEquipment(gameInput: GameInput) {
+    private fun doShowEquipment() {
         if (Player.weapon != null) {
             Game.println("You have ${Player.weapon!!.nameWithIndefiniteArticle} equipped.")
         } else {
@@ -325,7 +325,7 @@ object MyViewModel {
 
     // region attack/search entities
     private fun doAttack(gameInput: GameInput) {
-        val entity = Player.currentRoom.entities.firstOrNull { entity ->
+        val entity = Player.currentRoom.monsters.firstOrNull { entity ->
             (entity.name == gameInput.suffix
                     || entity.keywords.contains(gameInput.suffix))
                     && !entity.isDead
@@ -356,19 +356,19 @@ object MyViewModel {
     }
 
     private fun doSearch(gameInput: GameInput) {
-        val entity = Player.currentRoom.entities.firstOrNull { entity ->
-            entity.isDead
-                    && !entity.hasBeenSearched
-                    && (entity.keywords.contains(gameInput.suffix)
-                    || entity.name == gameInput.suffix)
+        val monster = Player.currentRoom.monsters.firstOrNull { monster ->
+            monster.isDead
+                    && !monster.hasBeenSearched
+                    && (monster.keywords.contains(gameInput.suffix)
+                    || monster.name == gameInput.suffix)
         }
 
-        entity?.run {
+        monster?.run {
             // TODO: inventory
-            Player.gold += entity.gold
-            entity.hasBeenSearched = true
+            Player.gold += gold
+            hasBeenSearched = true
 
-            println("You find ${entity.gold} gold on the $name.")
+            println("You find $gold gold on the $name.")
             println("You now have ${Player.gold} gold.")
         } ?: doUnknown()
     }
@@ -461,7 +461,7 @@ object MyViewModel {
 
             GameActionType.SEARCH -> doSearch(gameInput)
             GameActionType.SHOW_GOLD -> doShowGold()
-            GameActionType.SHOW_EQUIPMENT -> doShowEquipment(gameInput)
+            GameActionType.SHOW_EQUIPMENT -> doShowEquipment()
             GameActionType.SHOW_HEALTH -> doShowHealth()
             GameActionType.SHOW_INVENTORY -> doShowInventory()
             GameActionType.QUIT -> Game.running = false

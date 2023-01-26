@@ -7,40 +7,71 @@ import kotlinx.coroutines.launch
 import world.World
 
 object EntityManager {
+    var allNpcNames = listOf<String>()
+    var allNpcJobs = listOf<String>()
+
+    fun load(c: Class<() -> Unit>) {
+        allNpcNames = Common.parseArrayFromJson(c, "names.json")
+        allNpcJobs = Common.parseArrayFromJson(c, "jobs.json")
+    }
+
+    fun createNpc(): EntityFriendlyNpc =
+        EntityFriendlyNpc(
+            name = allNpcNames.random(),
+            job = allNpcJobs.random()
+        )
+
     suspend fun start() {
-        val maxEntities = 0
-        val allEntities = mutableListOf<EntityBase>()
+        val maxMonsters = 1
+        val allMonsters = mutableListOf<EntityMonster>()
+
+        val maxNpcs = 5
+        val allNpcs = mutableListOf<EntityFriendlyNpc>()
 
         coroutineScope {
             while (Game.running) {
-                delay(500)
-                removeSearchedEntities(allEntities)
-                delay(500)
-                if (allEntities.size < maxEntities) {
-                    if (allEntities.size % 5 == 0) {
-                        Debug.println("Total entities: ${allEntities.size}")
+                Game.delay(500)
+                removeSearchedMonsters(allMonsters)
+                Game.delay(500)
+
+                if (allMonsters.size < maxMonsters) {
+                    if (allMonsters.size % 5 == 0) {
+                        Debug.println("Total monsters: ${allMonsters.size}")
                     }
 
-                    val entity = EntityTemplates.entities.random().create()
-                    allEntities.add(entity)
+                    val monster = EntityTemplates.monsters.random().create()
+                    allMonsters.add(monster)
 
                     launch {
-                        entity.goLiveYourLifeAndBeFree(initialRoom = World.zero) // World.getRandomRoom()) }
+                        monster.goLiveYourLifeAndBeFree(initialRoom = World.getRandomRoom())
+                    }
+                }
+
+                if (allNpcs.size < maxNpcs) {
+                    if (allNpcs.size % 5 == 0) {
+                        Debug.println("Total NPCs: ${allNpcs.size}")
+                    }
+
+                    val npc = createNpc()
+                    allNpcs.add(npc)
+
+                    launch {
+                        npc.goLiveYourLifeAndBeFree(initialRoom = World.getRandomRoom())
                     }
                 }
             }
         }
     }
 
-    private fun removeSearchedEntities(allEntities: MutableList<EntityBase>) {
+    private fun removeSearchedMonsters(allMonsters: MutableList<EntityMonster>) {
         // remove searched dead
-        val searched = allEntities.filter { entity -> entity.hasBeenSearched }
+        val searched = allMonsters.filter { monster -> monster.hasBeenSearched }
         if (searched.isNotEmpty()) {
             // remove searched from room inventories
-            searched.forEach { entity ->
-                entity.currentRoom.entities.remove(entity)
+            searched.forEach { monster ->
+                monster.currentRoom.monsters.remove(monster)
             }
-            allEntities.removeAll(searched)
+            allMonsters.removeAll(searched)
         }
     }
 }

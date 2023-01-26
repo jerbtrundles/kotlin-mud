@@ -1,6 +1,7 @@
 package item.template
 
 import com.beust.klaxon.Klaxon
+import entity.EntityManager
 
 object ItemTemplates {
     var junk = listOf<ItemTemplateJunk>()
@@ -21,43 +22,37 @@ object ItemTemplates {
 
     private fun loadArmor(c: Class<() -> Unit>) {
         Debug.println("Loading armor...")
-        val json = c.getResourceAsStream("items-armor.json")?.bufferedReader()?.readText()!!
-        armor = Klaxon().parseArray(json)!!
+        armor = Common.parseArrayFromJson(c, "items-armor.json")
         Debug.println("Done loading armor. We can defend ourselves with ${armor.size} different options.")
     }
 
     private fun loadWeapons(c: Class<() -> Unit>) {
         Debug.println("Loading weapons...")
-        val json = c.getResourceAsStream("items-weapon.json")?.bufferedReader()?.readText()!!
-        weapons = Klaxon().parseArray(json)!!
+        weapons = Common.parseArrayFromJson(c, "items-weapon.json")
         Debug.println("Done loading weapons. We can kill enemies in ${weapons.size} different ways.")
     }
 
     private fun loadContainers(c: Class<() -> Unit>) {
         Debug.println("Loading containers...")
-        val json = c.getResourceAsStream("items-container.json")?.bufferedReader()?.readText()!!
-        containers = Klaxon().parseArray(json)!!
+        containers = Common.parseArrayFromJson(c, "items-container.json")
         Debug.println("Done loading containers. We can hold things in ${containers.size} types of containers.")
     }
 
     private fun loadFood(c: Class<() -> Unit>) {
         Debug.println("Loading food...")
-        val json = c.getResourceAsStream("items-food.json")?.bufferedReader()?.readText()!!
-        food = Klaxon().parseArray(json)!!
+        food = Common.parseArrayFromJson(c, "items-food.json")
         Debug.println("Done loading food. We gots ${food.size} types of things to eat.")
     }
 
     private fun loadJunk(c: Class<() -> Unit>) {
         Debug.println("Loading junk...")
-        val json = c.getResourceAsStream("items-junk.json")?.bufferedReader()?.readText()!!
-        junk = Klaxon().parseArray(json)!!
+        junk = Common.parseArrayFromJson(c, "items-junk.json")
         Debug.println("Done loading junk. Size of junk is ${junk.size}.")
     }
 
     private fun loadDrinks(c: Class<() -> Unit>) {
         Debug.println("Loading drinks...")
-        val json = c.getResourceAsStream("items-drink.json")?.bufferedReader()?.readText()!!
-        drinks = Klaxon().parseArray(json)!!
+        drinks = Common.parseArrayFromJson(c, "items-drink.json")
         Debug.println("Done loading drinks. We have ${drinks.size} drinks.")
     }
 

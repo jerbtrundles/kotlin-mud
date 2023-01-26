@@ -1,21 +1,17 @@
 package entity
 
 import com.beust.klaxon.Klaxon
-import game.Game
 
 object EntityTemplates {
-    var entities = listOf<EntityTemplate>()
+    var monsters = listOf<EntityMonsterTemplate>()
 
     fun load(c: Class<() -> Unit>) {
-        loadEntities(c)
+        loadMonsters(c)
     }
 
-    private fun loadEntities(c: Class<() -> Unit>) {
-        Debug.println("Loading entities...")
-
-        val json = c.getResourceAsStream("entities.json")?.bufferedReader()?.readText()!!
-        entities = Klaxon().parseArray(json)!!
-
-        Debug.println("Done loading entities. ${entities.size} types of enemies are out to get us!")
+    private fun loadMonsters(c: Class<() -> Unit>) {
+        Debug.println("Loading monsters...")
+        monsters = Common.parseArrayFromJson(c, "entities.json")
+        Debug.println("Done loading monsters. ${monsters.size} types of enemies are out to get us!")
     }
 }
