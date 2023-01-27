@@ -63,7 +63,7 @@
       "vitality": 20,
       "speed": 15,
       "defense": 20,
-      "health": 500,
+      "health": 50,
       "magic": 50
     }
   },
@@ -81,7 +81,7 @@
       "vitality": 8,
       "speed": 5,
       "defense": 8,
-      "health": 50,
+      "health": 40,
       "magic": 0
     }
   },
@@ -99,7 +99,7 @@
       "vitality": 10,
       "speed": 5,
       "defense": 5,
-      "health": 100,
+      "health": 30,
       "magic": 20
     }
   },
@@ -117,7 +117,7 @@
       "vitality": 12,
       "speed": 10,
       "defense": 8,
-      "health": 100,
+      "health": 50,
       "magic": 0
     }
   },
@@ -135,7 +135,7 @@
       "vitality": 15,
       "speed": 12,
       "defense": 15,
-      "health": 200,
+      "health": 50,
       "magic": 0
     }
   },
@@ -151,7 +151,7 @@
       "vitality": 15,
       "speed": 8,
       "defense": 15,
-      "health": 200,
+      "health": 50,
       "magic": 0
     }
   },
@@ -167,7 +167,7 @@
       "vitality": 15,
       "speed": 15,
       "defense": 15,
-      "health": 150,
+      "health": 50,
       "magic": 20
     }
   },
@@ -183,7 +183,7 @@
       "vitality": 15,
       "speed": 20,
       "defense": 10,
-      "health": 100,
+      "health": 40,
       "magic": 0
     }
   },
@@ -199,7 +199,7 @@
       "vitality": 15,
       "speed": 15,
       "defense": 15,
-      "health": 300,
+      "health": 60,
       "magic": 0
     }
   },
@@ -215,7 +215,7 @@
       "vitality": 10,
       "speed": 10,
       "defense": 5,
-      "health": 150,
+      "health": 40,
       "magic": 20
     }
   },
@@ -231,7 +231,7 @@
       "vitality": 15,
       "speed": 20,
       "defense": 12,
-      "health": 250,
+      "health": 40,
       "magic": 10
     }
   },
@@ -247,7 +247,7 @@
       "vitality": 20,
       "speed": 15,
       "defense": 15,
-      "health": 350,
+      "health": 30,
       "magic": 25
     }
   },
@@ -263,7 +263,7 @@
       "vitality": 10,
       "speed": 15,
       "defense": 10,
-      "health": 100,
+      "health": 15,
       "magic": 20
     }
   },
@@ -279,7 +279,7 @@
       "vitality": 15,
       "speed": 15,
       "defense": 20,
-      "health": 300,
+      "health": 35,
       "magic": 35
     }
   },
@@ -295,7 +295,7 @@
       "vitality": 20,
       "speed": 20,
       "defense": 15,
-      "health": 200,
+      "health": 25,
       "magic": 0
     }
   }

@@ -1,16 +1,22 @@
 package entity
 
+import Inventory
+import item.ItemArmor
+import item.ItemWeapon
 import world.Connection
 import world.Room
 import world.World
 
 abstract class EntityBase(
     val name: String,
-    val keywords: List<String>
+    val keywords: List<String>,
+    val attributes: EntityAttributes
 ) {
-    val inventory: EntityInventory = EntityInventory()
+    val inventory: Inventory = Inventory()
     var currentRoom: Room = World.void
     var posture: EntityPosture = EntityPosture.STANDING
+    var weapon: ItemWeapon? = null
+    var armor: ItemArmor? = null
 
     val coordinates
         get() = currentRoom.coordinates

@@ -22,4 +22,17 @@ class EntityAttributes(
         get() = "Health: $currentHealth/$maximumHealth"
     val magicString
         get() = "Magic: $currentMagic/$maximumMagic"
+
+    companion object {
+        val defaultNpc
+            get() = EntityAttributes(
+                strength = 3,
+                intelligence = 3,
+                vitality = 3,
+                speed = 3,
+                baseDefense = 3,
+                maximumHealth = 3,
+                maximumMagic = 3
+            )
+    }
 }

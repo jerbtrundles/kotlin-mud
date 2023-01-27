@@ -366,7 +366,7 @@ object MyViewModel {
         monster?.run {
             // TODO: inventory
             Player.gold += gold
-            hasBeenSearched = true
+            // hasBeenSearched = true
 
             println("You find $gold gold on the $name.")
             println("You now have ${Player.gold} gold.")

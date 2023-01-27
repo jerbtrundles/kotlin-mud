@@ -3,15 +3,18 @@ package entity
 import com.beust.klaxon.Klaxon
 
 object EntityTemplates {
-    var monsters = listOf<EntityMonsterTemplate>()
+    var  monsterTemplates = listOf<EntityMonsterTemplate>()
 
     fun load(c: Class<() -> Unit>) {
-        loadMonsters(c)
+        loadMonsterTemplates(c)
     }
 
-    private fun loadMonsters(c: Class<() -> Unit>) {
+    private fun loadMonsterTemplates(c: Class<() -> Unit>) {
         Debug.println("Loading monsters...")
-        monsters = Common.parseArrayFromJson(c, "entities.json")
-        Debug.println("Done loading monsters. ${monsters.size} types of enemies are out to get us!")
+        monsterTemplates =
+            Common.parseArrayFromJson<EntityMonsterTemplate>(c, "entities.json").filter { monsterTemplate ->
+                monsterTemplate.level < Debug.monsterMaxLevel
+            }
+        Debug.println("Done loading monsters. ${monsterTemplates.size} types of enemies are out to get us!")
     }
 }

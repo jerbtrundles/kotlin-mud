@@ -13,12 +13,13 @@ class EntityMonster(
     keywords: List<String>,
     // level and attributes remain constant
     val level: Int,
-    val attributes: EntityAttributes,
+    attributes: EntityAttributes,
     val experience: Int,
     val gold: Int
-) : EntityBase(name, keywords) {
+) : EntityBase(name, keywords, attributes) {
 
-    var hasBeenSearched = false
+    val hasBeenSearched
+        get() = isDead // = false
     val isDead
         get() = attributes.currentHealth <= 0
 
@@ -42,10 +43,14 @@ class EntityMonster(
         currentRoom.addMonster(this)
 
         while (!hasBeenSearched && Game.running) {
-            // TODO: currently hard-coded to wait 2-5 seconds
+            // TODO: currently hard-coded to wait x-y seconds (e.g. 5s-10s -> 50cs*100 - 100cs*100)
             //  make this based off of something else
             //  e.g. entity speed, type
-            val repeat = Random.nextInt(20, 50)
+
+            val repeat = Random.nextInt(
+                Debug.monsterDelayMin / 100,
+                Debug.monsterDelayMax / 100
+            )
             repeat(repeat) {
                 if (Game.running && !hasBeenSearched) {
                     delay(100)
