@@ -9,43 +9,35 @@ object Debug {
     const val monsterDelayMin = 2000
     const val monsterDelayMax = 4000
     const val monsterMaxLevel = 5
+    const val initialWeapons = 20
+    const val initialArmor = 20
+    const val initialJunk = 5
+    const val initialFood = 20
+    const val initialDrink = 20
+    const val initialContainer = 3
 
     fun println(str: String) {
         // kotlin.io.println(str)
     }
 
     fun addItemsToRandomRooms() {
-        repeat(20) {
+        repeat(initialWeapons) {
             ItemTemplates.weapons.random().createItemAt(World.getRandomRoom())
         }
-        repeat(20) {
+        repeat(initialArmor) {
             ItemTemplates.armor.random().createItemAt(World.getRandomRoom())
         }
-//        repeat(3) {
-//            val junk = ItemTemplates.junk.random()
-//            val room = World.getRandomRoom()
-//            repeat(10) {
-//                junk.createItemAt(room)
-//            }
-//        }
-
-//        repeat(3) {
-//            val food = ItemTemplates.food.random()
-//            val room = World.getRandomRoom()
-//            repeat(10) {
-//                food.createItemAt(room)
-//            }
-//        }
-
-//        repeat(30) {
-//            ItemTemplates.junk.random().createItemAt(World.getRandomRoom())
-//        }
-//        repeat(3) {
-//            ItemTemplates.food.random().createItemAt(World.getRandomRoom())
-//            ItemTemplates.drinks.random().createItemAt(World.getRandomRoom())
-//            ItemTemplates.containers.random().createItemAt(World.getRandomRoom())
-//            ItemTemplates.weapons.random().createItemAt(World.getRandomRoom())
-//            ItemTemplates.armor.random().createItemAt(World.getRandomRoom())
-//        }
+        repeat(initialJunk) {
+            ItemTemplates.junk.random().createItemAt(World.getRandomRoom())
+        }
+        repeat(initialFood) {
+            ItemTemplates.food.random().createItemAt(World.getRandomRoom())
+        }
+        repeat(initialDrink) {
+            ItemTemplates.drinks.random().createItemAt(World.getRandomRoom())
+        }
+        repeat(initialContainer) {
+            ItemTemplates.containers.random().createItemAt(World.getRandomRoom())
+        }
     }
 }

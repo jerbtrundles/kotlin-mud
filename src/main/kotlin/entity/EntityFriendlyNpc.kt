@@ -105,7 +105,7 @@ class EntityFriendlyNpc(
     }
 
     private fun doAttack() {
-        currentRoom.monsters.randomOrNull()?.let { monster ->
+        currentRoom.monsters.filter { monster -> !monster.isDead }.randomOrNull()?.let { monster ->
             val weaponString = weapon?.name ?: "fists"
             val attack = attributes.strength + (weapon?.power ?: 0)
             val defense = monster.attributes.baseDefense
