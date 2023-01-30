@@ -1,6 +1,7 @@
 package entity
 
 import game.Game
+import game.MovementDirection
 import kotlinx.coroutines.delay
 import withIndefiniteArticle
 import world.Connection
@@ -17,11 +18,9 @@ class EntityMonster(
     val experience: Int,
     val gold: Int
 ) : EntityBase(name, keywords, attributes) {
-
     val hasBeenSearched
+        // TODO: make this false when done debugging
         get() = isDead // = false
-    val isDead
-        get() = attributes.currentHealth <= 0
 
     override val nameForCollectionString
         get() = if (isDead) {
@@ -32,11 +31,16 @@ class EntityMonster(
 
     override val arriveString = "${name.withIndefiniteArticle(capitalized = true)} has arrived."
     override fun departString(connection: Connection): String {
-        // The goblin heads east.
-        return "The $name heads ${connection.direction.toString().lowercase()}."
-
-        // TODO: The goblin heads through the gates.
+        return if(connection.direction != MovementDirection.NONE) {
+            // The goblin heads east.
+            "The $name heads ${connection.direction.toString().lowercase()}."
+        } else {
+            // TODO: The goblin heads through the gates.
+            "The $name heads over to the ${connection.matchInput.suffix}."
+        }
     }
+
+    override val deathString = "The $name dies."
 
     override suspend fun goLiveYourLifeAndBeFree(initialRoom: Room) {
         currentRoom = initialRoom
@@ -46,16 +50,7 @@ class EntityMonster(
             // TODO: currently hard-coded to wait x-y seconds (e.g. 5s-10s -> 50cs*100 - 100cs*100)
             //  make this based off of something else
             //  e.g. entity speed, type
-
-            val repeat = Random.nextInt(
-                Debug.monsterDelayMin / 100,
-                Debug.monsterDelayMax / 100
-            )
-            repeat(repeat) {
-                if (Game.running && !hasBeenSearched) {
-                    delay(100)
-                }
-            }
+            doDelay()
 
             if (!isDead) {
                 doAction()
@@ -65,6 +60,18 @@ class EntityMonster(
         if (Game.running) {
             // decay event
             currentRoom.announce("The body of the $name crumbles to dust.")
+        }
+    }
+
+    private suspend fun doDelay() {
+        val repeat = Random.nextInt(
+            Debug.monsterDelayMin / 100,
+            Debug.monsterDelayMax / 100
+        )
+        repeat(repeat) {
+            if (Game.running && !hasBeenSearched) {
+                delay(100)
+            }
         }
     }
 

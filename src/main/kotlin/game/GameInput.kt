@@ -4,7 +4,7 @@ class GameInput constructor(
     private val rawInput: String
 ) {
     private val sanitizedInput = if (MovementDirection.isDirectionalWord(rawInput)
-        || rawInput.startsWith("go ")
+        || (rawInput.startsWith("go ") && MovementDirection.isDirectionalWord(rawInput.substringAfter(' ')))
     ) {
         val direction = rawInput.removePrefix("go ")
         "go " + MovementDirection.parseFromString(direction).name.lowercase()

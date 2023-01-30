@@ -2,8 +2,8 @@ import item.template.ItemTemplates
 import world.World
 
 object Debug {
-    const val maxNpcs = 10
-    const val maxMonsters = 5
+    const val maxNpcs = 1
+    const val maxMonsters = 1
     const val npcDelayMin = 500
     const val npcDelayMax = 1000
     const val monsterDelayMin = 2000

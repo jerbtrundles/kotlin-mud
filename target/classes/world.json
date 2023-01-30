@@ -48,7 +48,7 @@
           {
             "room-id": 2,
             "room-coordinates": "0, 0, 2",
-            "room-description": "This is the northeast room.",
+            "room-description": "This is the northeast room. Trun's dull weapons is here.",
             "room-connections": [
               {
                 "connection-coordinates": "0, 0, 1",
@@ -61,6 +61,10 @@
               {
                 "connection-coordinates": "0, 0, 5",
                 "connection-input": "go south"
+              },
+              {
+                "connection-coordinates": "0, 1, 0",
+                "connection-input": "go shop"
               }
             ]
           },
@@ -195,6 +199,23 @@
               {
                 "connection-coordinates": "0, 0, 7",
                 "connection-input": "go west"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "subregion-id": 1,
+        "subregion-name": "Trun's dull weapons",
+        "subregion-rooms": [
+          {
+            "room-id": 0,
+            "room-coordinates": "0, 1, 0",
+            "room-description": "This is the weapons shop.",
+            "room-connections": [
+              {
+                "connection-coordinates": "0, 0, 2",
+                "connection-input": "go out"
               }
             ]
           }

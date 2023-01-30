@@ -1,6 +1,7 @@
 package entity
 
 import game.Game
+import game.MovementDirection
 import item.ItemArmor
 import item.ItemWeapon
 import world.Connection
@@ -18,19 +19,32 @@ class EntityFriendlyNpc(
 ) {
     val nameWithJob = "$name the $job"
     val randomName
-        get() = if (Random.nextInt(0, 2) == 0) {
-            nameWithJob
-        } else {
-            name
+        get() = when (Random.nextInt(0, 2)) {
+            0 -> nameWithJob
+            else -> name
         }
 
     override val arriveString = "$nameWithJob walks in."
     override fun departString(connection: Connection): String {
-        return "$nameWithJob heads ${connection.direction.toString().lowercase()}."
+        return if (connection.direction != MovementDirection.NONE) {
+            // Bob heads east.
+            "$name heads ${connection.direction.toString().lowercase()}."
+        } else {
+            // Bob heads over to the shop.
+            "$name heads over to the ${connection.matchInput.suffix}."
+
+            // TODO: connection types that don't fit into these scenarios
+            //  e.g. Bob heads through the town gates. (go gates)
+        }
     }
 
+    override val deathString = "$nameWithJob dies."
     override val nameForCollectionString
-        get() = nameWithJob
+        get() = if (isDead) {
+            "$nameWithJob, who is dead"
+        } else {
+            nameWithJob
+        }
 
     companion object {
         val flavorTextArray = arrayOf(
@@ -41,7 +55,7 @@ class EntityFriendlyNpc(
             "randomName rummages around in their pockets, looking for something."
         )
 
-        val quipArray = arrayOf(
+        val flavorTextQuipArray = arrayOf(
             "Nice weather today, isn't it?",
             "My feet ache somethin' awful.",
             "I'm a little sick. Don't get too close!",
@@ -52,7 +66,7 @@ class EntityFriendlyNpc(
         fun flavorText(npc: EntityFriendlyNpc) =
             flavorTextArray.random()
                 .replace("randomName", npc.randomName)
-                .replace("quip", quipArray.random())
+                .replace("quip", flavorTextQuipArray.random())
     }
 
     override suspend fun goLiveYourLifeAndBeFree(initialRoom: Room) {
@@ -69,37 +83,52 @@ class EntityFriendlyNpc(
 
     override fun doAction() {
         if (weapon == null) {
-            when (Random.nextInt(3)) {
-                0 -> doEquipWeapon()
-                1 -> doRandomMove()
-                2 -> doGetRandomItemFromRoom()
-            }
+            prioritizeGettingWeapon()
         } else if (armor == null) {
-            when (Random.nextInt(4)) {
-                0 -> doEquipArmor()
-                1 -> doRandomMove()
-                2 -> doGetRandomItemFromRoom()
-                3 -> doAttack()
-            }
+            prioritizeGettingArmor()
         } else {
-            when (Random.nextInt(10)) {
-                // 0 -> doGetRandomItemFromRoom()
-                0 -> doRandomMove()
-                1 -> doExchangeWordsWithNpc()
-                2 -> doSit()
-                3 -> doStand()
-                4, 5 -> doDropRandomItemFromInventory()
-                6 -> doFlavorText()
-                else -> doAttack()
+            normalBehavior()
+        }
+    }
+
+    // region behaviors
+    private fun normalBehavior() {
+        when (Random.nextInt(10)) {
+            // 0 -> doGetRandomItemFromRoom()
+            0 -> doRandomMove()
+            1 -> doExchangeWordsWithNpc()
+            2 -> doSit()
+            3 -> doStand()
+            4, 5 -> doDropRandomItemFromInventory()
+            6 -> doFlavorText()
+            else -> doAttack()
 //                6 -> doEquipWeapon()
 //                7 -> doEquipArmor()
 //                8 -> doRemoveWeapon()
 //                9 -> doRemoveArmor()
-                // else -> doDropRandomItemFromInventory()
-            }
+            // else -> doDropRandomItemFromInventory()
         }
     }
 
+    private fun prioritizeGettingArmor() {
+        when (Random.nextInt(4)) {
+            0 -> doEquipArmor()
+            1 -> doRandomMove()
+            2 -> doGetRandomItemFromRoom()
+            3 -> doAttack()
+        }
+    }
+
+    private fun prioritizeGettingWeapon() {
+        when (Random.nextInt(3)) {
+            0 -> doEquipWeapon()
+            1 -> doRandomMove()
+            2 -> doGetRandomItemFromRoom()
+        }
+    }
+    // endregion
+
+    // region actions
     private fun doFlavorText() {
         currentRoom.announce(flavorText(this))
     }
@@ -119,10 +148,7 @@ class EntityFriendlyNpc(
                 currentRoom.announce("They miss!")
             }
 
-            monster.attributes.currentHealth -= damage
-            if (monster.attributes.currentHealth <= 0) {
-                currentRoom.announce("The ${monster.name} dies.")
-            }
+            monster.takeDamage(damage)
         }
     }
 
@@ -222,4 +248,5 @@ class EntityFriendlyNpc(
             // otherwise (The goblin goes through the gates.)
         }
     }
+    // endregion
 }

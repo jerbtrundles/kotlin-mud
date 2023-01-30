@@ -64,7 +64,12 @@ object Common {
 }
 
 fun String.withIndefiniteArticle(capitalized: Boolean = false): String {
-    return if ("aeiou".contains(this[0])) {
+    // exceptions where the string should still be "a <exception>"
+    //  e.g. hard y sounds, like "a unicorn"
+    val exceptions = arrayOf(
+        "unicorn"
+    )
+    return if ("aeiou".contains(this[0]) && !exceptions.contains(this)) {
         if (capitalized) {
             "An $this"
         } else {

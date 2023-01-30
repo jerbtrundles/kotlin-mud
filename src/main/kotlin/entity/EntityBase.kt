@@ -23,9 +23,20 @@ abstract class EntityBase(
 
     abstract val nameForCollectionString: String
     abstract val arriveString: String
+    abstract val deathString: String
+
+    val isDead
+        get() = attributes.currentHealth <= 0
+
     abstract fun departString(connection: Connection): String
     abstract suspend fun goLiveYourLifeAndBeFree(initialRoom: Room)
     abstract fun doAction()
     abstract fun doRandomMove()
 
+    fun takeDamage(damage: Int) {
+        attributes.currentHealth -= damage
+        if (attributes.currentHealth <= 0) {
+            currentRoom.announce(deathString)
+        }
+    }
 }
