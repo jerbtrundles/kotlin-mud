@@ -1,13 +1,14 @@
 package entity
 
+import debug.Debug
+import entity.behavior.EntityAction
+import entity.behavior.EntitySituation
 import game.Game
 import game.MovementDirection
-import kotlinx.coroutines.delay
 import withIndefiniteArticle
 import world.Connection
 import world.Room
 import world.World
-import kotlin.random.Random
 
 class EntityMonster(
     name: String,
@@ -18,10 +19,8 @@ class EntityMonster(
     val experience: Int,
     val gold: Int
 ) : EntityBase(name, keywords, attributes) {
-    val hasBeenSearched
-        // TODO: make this false when done debugging
-        get() = isDead // = false
 
+    override val nameForStory = "The $name"
     override val nameForCollectionString
         get() = if (isDead) {
             "dead $name"
@@ -31,11 +30,16 @@ class EntityMonster(
 
     override val arriveString = "${name.withIndefiniteArticle(capitalized = true)} has arrived."
     override fun departString(connection: Connection): String {
-        return if(connection.direction != MovementDirection.NONE) {
+        return if (connection.direction != MovementDirection.NONE) {
             // The goblin heads east.
             "The $name heads ${connection.direction.toString().lowercase()}."
-        } else {
+        } else if (connection.matchInputString.contains("gates")) {
+            // TODO: make this better
+            // TODO: other cases for climbing, other connection types
             // TODO: The goblin heads through the gates.
+            "The $name heads through the town gates."
+        } else {
+            // TODO: make this better
             "The $name heads over to the ${connection.matchInput.suffix}."
         }
     }
@@ -43,63 +47,124 @@ class EntityMonster(
     override val deathString = "The $name dies."
 
     override suspend fun goLiveYourLifeAndBeFree(initialRoom: Room) {
+        doInit(initialRoom)
+
+        while (hasNotBeenSearched && Game.running) {
+            doDelay()
+            doAction()
+        }
+
+        Debug.println("EntityMonster::goLiveYourLifeAndBeFree() - $name is dead, has been searched, and will now decay")
+        doDecay()
+    }
+
+    override fun doInit(initialRoom: Room) {
+        // set initial room and add self
         currentRoom = initialRoom
         currentRoom.addMonster(this)
 
-        while (!hasBeenSearched && Game.running) {
-            // TODO: currently hard-coded to wait x-y seconds (e.g. 5s-10s -> 50cs*100 - 100cs*100)
-            //  make this based off of something else
-            //  e.g. entity speed, type
-            doDelay()
-
-            if (!isDead) {
-                doAction()
-            }
-        }
-
-        if (Game.running) {
-            // decay event
-            currentRoom.announce("The body of the $name crumbles to dust.")
-        }
-    }
-
-    private suspend fun doDelay() {
-        val repeat = Random.nextInt(
-            Debug.monsterDelayMin / 100,
-            Debug.monsterDelayMax / 100
-        )
-        repeat(repeat) {
-            if (Game.running && !hasBeenSearched) {
-                delay(100)
-            }
-        }
+        Debug.println("EntityMonster::doInit() - adding ${this.name} to ${currentRoom.coordinates}")
     }
 
     override fun doAction() {
-        doRandomMove()
+        if (isDead) {
+            return
+        }
 
-        /*when (Random.nextInt(2)) {
-            0 -> currentRoom.announce("\"Mrrrrrrr...\" says the $name.")
-            1 -> doRandomMove()
-            else -> {
-                Game.print("EIHGHIEGOWSJDSOIJF")
+        val action = behavior.getNextAction(this)
+        Debug.println("EntityMonster::doAction() - $action")
+
+        when(action) {
+            EntityAction.MOVE -> doRandomMove()
+            EntityAction.SIT -> doSit()
+            EntityAction.STAND -> doStand()
+            EntityAction.GET_WEAPON -> doGetRandomWeapon()
+            EntityAction.GET_ARMOR -> doGetRandomArmor()
+            else -> doNothing()
+        }
+    }
+
+    private fun doGetRandomArmor() {
+        currentRoom.inventory.getRandomArmor()?.let {new ->
+            armor?.let { old ->
+                currentRoom.announce("The $name drops ${old.nameWithIndefiniteArticle}.")
+                currentRoom.inventory.items.add(old)
             }
-        }*/
+
+            armor = new
+            currentRoom.announce("The $name picks up ${new.nameWithIndefiniteArticle}.")
+        } ?: {
+            Debug.println("EntityMonster::doGetRandomArmor() - no armor in current room")
+            doNothing()
+        }
+    }
+
+    private fun doGetRandomWeapon() {
+        currentRoom.inventory.getRandomWeapon()?.let {new ->
+            weapon?.let { old ->
+                currentRoom.announce("The $name drops ${old.nameWithIndefiniteArticle}.")
+                currentRoom.inventory.items.add(old)
+            }
+
+            weapon = new
+            currentRoom.announce("The $name picks up ${new.nameWithIndefiniteArticle}.")
+        } ?: {
+            Debug.println("EntityMonster::doGetRandomWeapon() - no weapon in current room")
+            doNothing()
+        }
+    }
+
+    private fun doSit() {
+        if(posture != EntityPosture.SITTING) {
+            posture = EntityPosture.SITTING
+            currentRoom.announce("The $name sits down.")
+        } else {
+            Debug.println("EntityMonster::doSit() - already sitting")
+            doNothing()
+        }
+    }
+
+    private fun doNothing() {
+        Debug.println("EntityMonster::doNothing()")
+    }
+
+    private fun doStand() {
+        if(posture != EntityPosture.STANDING) {
+            Debug.println("EntityMonster::doStand()")
+            posture = EntityPosture.STANDING
+            currentRoom.announce("The $name stands up.")
+        } else {
+            Debug.println("EntityMonster::doStand() - already standing")
+            doNothing()
+        }
     }
 
     override fun doRandomMove() {
-        val connection = currentRoom.connections.random()
-        val newRoom = World.getRoomFromCoordinates(connection.coordinates)
+        if(posture != EntityPosture.STANDING) {
+            Debug.println("EntityMonster::doRandomMove() - need to stand")
+            doStand()
+        } else {
+            val connection = currentRoom.connections.random()
+            val newRoom = World.getRoomFromCoordinates(connection.coordinates)
+            doMove(newRoom, connection)
+        }
+    }
+
+    private fun doMove(newRoom: Room, connection: Connection) {
+        // debug.Debug.println("EntityMonster::doRandomMove() - ${this.name} - move from ${currentRoom.coordinates} to ${newRoom.coordinates}")
 
         // leaving
         currentRoom.monsters.remove(this)
         currentRoom.announce(departString(connection))
         // move
         currentRoom = newRoom
-        // arriving
+        // arriving (addMonster handles announce)
         currentRoom.addMonster(this)
+    }
 
-        // if directional
-        // otherwise (The goblin goes through the gates.)
+    fun assessSituations() {
+        EntitySituation.values().forEach { situation ->
+            Game.println("$situation: ${isInSituation(situation)}")
+        }
     }
 }

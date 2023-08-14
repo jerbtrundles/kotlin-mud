@@ -71,7 +71,7 @@
           {
             "room-id": 3,
             "room-coordinates": "0, 0, 3",
-            "room-description": "This is the west room.",
+            "room-description": "This is the west room. The town bank is here.",
             "room-connections": [
               {
                 "connection-coordinates": "0, 0, 0",
@@ -84,6 +84,10 @@
               {
                 "connection-coordinates": "0, 0, 6",
                 "connection-input": "go south"
+              },
+              {
+                "connection-coordinates": "0, 2, 0",
+                "connection-input": "go bank"
               }
             ]
           },
@@ -218,6 +222,24 @@
                 "connection-input": "go out"
               }
             ]
+          }
+        ]
+      },
+      {
+        "subregion-id": 2,
+        "subregion-name": "Town Bank",
+        "subregion-rooms": [
+          {
+            "room-id": 0,
+            "room-coordinates": "0, 2, 0",
+            "room-description": "This is the town bank.",
+            "room-connections": [
+              {
+                "connection-coordinates": "0, 0, 3",
+                "connection-input": "go out"
+              }
+            ],
+            "room-is-bank": "true"
           }
         ]
       }

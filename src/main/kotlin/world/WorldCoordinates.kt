@@ -6,7 +6,7 @@ data class WorldCoordinates(
     val room: Int
 ) {
     override fun toString(): String {
-        return "Coordinates: $region, $subregion, $room"
+        return "[$region, $subregion, $room]"
     }
 
     companion object {

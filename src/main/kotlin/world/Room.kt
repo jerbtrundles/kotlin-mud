@@ -26,7 +26,7 @@ open class Room(
             }
 
     private val npcsString: String
-        get() = if(npcs.isEmpty()) {
+        get() = if (npcs.isEmpty()) {
             ""
         } else {
             "You also see " +
@@ -53,7 +53,9 @@ open class Room(
             "You also see $inventory.\n"
         }
 
-    override fun toString(): String {
+    override fun toString() = "Room: $coordinates"
+
+    fun displayString(): String {
         val sb = StringBuilder()
         sb.appendLine(description)
         sb.append(inventoryString)
@@ -79,6 +81,32 @@ open class Room(
         }
     }
 
-    override fun equals(other: Any?) = (uuid == (other as Room).uuid)
-    override fun hashCode(): Int = uuid.hashCode()
+    fun findLivingMonster(keyword: String): EntityMonster? =
+        monsters.firstOrNull { entity ->
+            (entity.name == keyword
+                    || entity.keywords.contains(keyword))
+                    && !entity.isDead
+        }
+
+    fun findDeadMonster(keyword: String): EntityMonster? =
+        monsters.firstOrNull { monster ->
+            monster.isDead
+                    && monster.hasNotBeenSearched
+                    && (monster.keywords.contains(keyword)
+                    || monster.name == keyword)
+        }
+
+    fun findAnyMonster(keyword: String): EntityMonster? =
+        monsters.firstOrNull { monster ->
+            monster.keywords.contains(keyword)
+                    || monster.name == keyword
+        }
+
+    override fun equals(other: Any?) = (uuid == (other as? Room)?.uuid)
+    override fun hashCode() = uuid.hashCode()
 }
+
+// find an item, item comes with fluff text, maybe a story
+// one-liners vs story
+// story has a collection of strings, play one string at a time, move to next, message cooldown, repeat until done
+// story cooldown; don't play the same story over and over too quickly

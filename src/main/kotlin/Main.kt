@@ -1,3 +1,4 @@
+import debug.Debug
 import entity.EntityManager
 import entity.EntityTemplates
 import game.Game
@@ -10,17 +11,19 @@ fun main() {
     init()
 
     runBlocking {
-        launch { gatherInput() }
         launch { EntityManager.start() }
+        launch { gatherInput() }
     }
 
-    Game.println("I'mma done!")
+    Debug.println("I'mma done!")
 }
 
 // region init
 fun init() {
     loadResources()
-    Debug.addItemsToRandomRooms()
+    // add debug items, monsters, npcs
+    Debug.init()
+    // display initial room
     MyViewModel.onInput("look")
 }
 
@@ -42,7 +45,7 @@ fun loadResources() {
 suspend fun gatherInput() {
     withContext(Dispatchers.IO) {
         while (Game.running) {
-            MyViewModel.onInput(readLine() ?: "")
+            MyViewModel.onInput(readlnOrNull() ?: "")
         }
     }
 }

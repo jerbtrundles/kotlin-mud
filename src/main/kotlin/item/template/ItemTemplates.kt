@@ -1,7 +1,6 @@
 package item.template
 
-import com.beust.klaxon.Klaxon
-import entity.EntityManager
+import debug.Debug
 
 object ItemTemplates {
     var junk = listOf<ItemTemplateJunk>()

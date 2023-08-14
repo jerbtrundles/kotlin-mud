@@ -1,6 +1,7 @@
 package entity
 
 import com.beust.klaxon.Json
+import kotlin.math.max
 
 class EntityAttributes(
     var strength: Int = 20,
@@ -22,6 +23,10 @@ class EntityAttributes(
         get() = "Health: $currentHealth/$maximumHealth"
     val magicString
         get() = "Magic: $currentMagic/$maximumMagic"
+
+    fun isInjuredMinor() = (currentHealth.toDouble() / maximumHealth) < 0.9
+    fun isInjuredModerate() = (currentHealth.toDouble() / maximumHealth) < 0.6
+    fun isInjuredMajor() = (currentHealth.toDouble() / maximumHealth) < 0.3
 
     companion object {
         val defaultNpc

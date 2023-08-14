@@ -1,8 +1,10 @@
+import entity.EntityMonster
 import entity.EntityPosture
 import game.Game
 import game.GameActionType
 import game.GameInput
 import item.*
+import world.RoomBank
 import world.RoomShop
 import world.World
 
@@ -23,25 +25,28 @@ object MyViewModel {
     private fun doLook(gameInput: GameInput? = null) {
         gameInput?.run {
             when (gameInput.words.size) {
+                // "look"
                 1 -> doLookCurrentRoom()
-                2 -> doLookAtItemWithKeyword(gameInput.words[1])
+                // "look item"
+                2 -> doLookAtItemWithKeyword(keyword = gameInput.words[1])
+                // 3+ - "look at item", "look in item"
                 else -> when (words[1]) {
-                    "in" -> doLookInItemWithKeyword(gameInput.suffixAfterWord(1))
-                    "at" -> doLookAtItemWithKeyword(gameInput.suffixAfterWord(1))
+                    "in" -> doLookInItemWithKeyword(keyword = gameInput.suffixAfterWord(1))
+                    "at" -> doLookAtItemWithKeyword(keyword = gameInput.suffixAfterWord(1))
                     else -> doUnknown()
                 }
             }
         } ?: doLookCurrentRoom()
     }
 
-    private fun doLookAtItemWithKeyword(word: String) {
-        getItemWithKeyword(word)?.run {
+    private fun doLookAtItemWithKeyword(keyword: String) {
+        getItemWithKeyword(keyword)?.run {
             Game.println(description)
         } ?: doUnknown()
     }
 
-    private fun doLookInItemWithKeyword(word: String) {
-        getTypedItemByKeyword<ItemContainer>(word)?.run {
+    private fun doLookInItemWithKeyword(keyword: String) {
+        getTypedItemByKeyword<ItemContainer>(keyword)?.run {
             if (closed) {
                 Game.println("The $name is closed.")
             } else {
@@ -57,7 +62,7 @@ object MyViewModel {
             val room = subregion.rooms[room]
 
             Game.println("[$region - $subregion]")
-            Game.println(room.toString())
+            Game.println(room.displayString())
         }
     }
     // endregion
@@ -219,6 +224,7 @@ object MyViewModel {
     // endregion
 
     // region single-line handlers
+    private fun doShowBankAccountBalance() = Game.println(Player.bankAccountBalanceString)
     private fun doShowGold() = Game.println(Player.goldString)
     private fun doShowInventory() = Game.println(Player.inventoryString)
     private fun doShowHealth() = Game.println(Player.healthString)
@@ -226,9 +232,9 @@ object MyViewModel {
     // endregion
 
     // region inventory helpers
-    private fun getItemWithKeyword(word: String): ItemBase? =
-        Player.inventory.getItemByKeyword(word)
-            ?: Player.currentRoom.inventory.getItemByKeyword(word)
+    private fun getItemWithKeyword(keyword: String): ItemBase? =
+        Player.inventory.getItemByKeyword(keyword)
+            ?: Player.currentRoom.inventory.getItemByKeyword(keyword)
 
     private inline fun <reified T> getTypedItemByKeyword(word: String): T? =
         Player.inventory.getTypedItemByKeyword<T>(word)
@@ -325,11 +331,7 @@ object MyViewModel {
 
     // region attack/search entities
     private fun doAttack(gameInput: GameInput) {
-        val entity = Player.currentRoom.monsters.firstOrNull { entity ->
-            (entity.name == gameInput.suffix
-                    || entity.keywords.contains(gameInput.suffix))
-                    && !entity.isDead
-        }
+        val entity = Player.currentRoom.findLivingMonster(gameInput.suffix)
 
         entity?.run {
             val weapon = Player.weapon?.name ?: "fists"
@@ -356,20 +358,15 @@ object MyViewModel {
     }
 
     private fun doSearch(gameInput: GameInput) {
-        val monster = Player.currentRoom.monsters.firstOrNull { monster ->
-            monster.isDead
-                    && !monster.hasBeenSearched
-                    && (monster.keywords.contains(gameInput.suffix)
-                    || monster.name == gameInput.suffix)
-        }
+        val deadMonster = Player.currentRoom.findDeadMonster(gameInput.suffix)
 
-        monster?.run {
+        deadMonster?.run {
             // TODO: inventory
-            Player.gold += gold
-            // hasBeenSearched = true
+            hasNotBeenSearched = false
 
             println("You find $gold gold on the $name.")
-            println("You now have ${Player.gold} gold.")
+            Player.gold += gold
+            println(Player.goldString)
         } ?: doUnknown()
     }
     // endregion
@@ -381,7 +378,7 @@ object MyViewModel {
                 Player.inventory.items.remove(this)
                 Player.gold += sellValue
                 println("You sell your $name to the merchant and receive $sellValue gold.")
-                println("You now have ${Player.gold} gold.")
+                println(Player.goldString)
             } ?: doUnknown()
         } ?: doRoomIsNotShop()
     }
@@ -401,6 +398,10 @@ object MyViewModel {
         println("You don't see a merchant anywhere around here.")
     }
 
+    private fun doRoomIsNotBank() {
+        println("You don't see a bank teller anywhere around here.")
+    }
+
     private fun doPriceItem(gameInput: GameInput) {
         (Player.currentRoom as? RoomShop)?.run {
             Player.inventory.getItemByKeyword(gameInput.suffix)?.run {
@@ -414,11 +415,11 @@ object MyViewModel {
             soldItemTemplates.firstOrNull { template ->
                 template.matches(gameInput.suffix)
             }?.run {
-                if(Player.gold >= value) {
+                if (Player.gold >= value) {
                     val item = createItem()
                     Player.gold -= item.value
                     println("You purchase ${item.nameWithIndefiniteArticle} from the merchant for ${item.value} gold.")
-                    println("You have ${Player.gold} gold left.")
+                    println(Player.goldString)
                     Player.inventory.items.add(item)
                 } else {
                     println("You don't have enough gold (${Player.gold}) to buy the $name ($value).")
@@ -428,9 +429,69 @@ object MyViewModel {
     }
     // endregion
 
-    fun onInput(input: String) {
-        val gameInput = GameInput(input)
+    private fun doDepositMoney(gameInput: GameInput) {
+        (Player.currentRoom as? RoomBank)?.run {
+            when (gameInput.words.size) {
+                1 -> doUnknown()
+                else -> {
+                    gameInput.words[1].toIntOrNull()?.let { depositAmount ->
+                        if (depositAmount > Player.gold) {
+                            println("You don't have that much gold to deposit.")
+                        } else {
+                            Player.bankAccountBalance += depositAmount
+                            Player.gold -= depositAmount
 
+                            println("You deposit $depositAmount gold.")
+                            println(Player.bankAccountBalanceString)
+                            println(Player.goldString)
+                        }
+                    } ?: doUnknown()
+                }
+            }
+        } ?: doRoomIsNotBank()
+    }
+
+    private fun doWithdrawMoney(gameInput: GameInput) {
+        (Player.currentRoom as? RoomBank)?.run {
+            when (gameInput.words.size) {
+                1 -> doUnknown()
+                else -> {
+                    gameInput.words[1].toIntOrNull()?.let { withdrawAmount ->
+                        if (withdrawAmount > Player.bankAccountBalance) {
+                            println("You don't have that much gold in your account to withdraw.")
+                        } else {
+                            Player.bankAccountBalance -= withdrawAmount
+                            Player.gold += withdrawAmount
+
+                            println("You withdraw $withdrawAmount gold.")
+                            println(Player.bankAccountBalanceString)
+                            println(Player.goldString)
+                        }
+                    } ?: doUnknown()
+                }
+            }
+        } ?: doRoomIsNotBank()
+    }
+
+    private fun doCheckBankAccountBalance() {
+        (Player.currentRoom as? RoomBank)?.run {
+            println(Player.bankAccountBalanceString)
+        } ?: doRoomIsNotBank()
+    }
+
+    private fun doAssess(gameInput: GameInput) {
+        when (gameInput.words.size) {
+            1 -> doUnknown()
+            2 -> Player.currentRoom.findAnyMonster(gameInput.suffix)
+                ?.assessSituations()
+                ?: doUnknown()
+
+            else -> doUnknown()
+        }
+    }
+
+    fun onInput(input: String) = onInput(GameInput(input))
+    fun onInput(gameInput: GameInput) {
         when (gameInput.action) {
             GameActionType.ATTACK -> doAttack(gameInput)
             GameActionType.EQUIP_ITEM -> doEquipItem(gameInput)
@@ -456,15 +517,26 @@ object MyViewModel {
             GameActionType.LOOK -> doLook(gameInput)
             GameActionType.MOVE -> doMove(gameInput)
 
-            GameActionType.PRICE_ITEM -> doPriceItem(gameInput)
-            GameActionType.LIST_ITEMS -> doListItems()
+            GameActionType.WITHDRAW_MONEY -> doWithdrawMoney(gameInput)
+            GameActionType.DEPOSIT_MONEY -> doDepositMoney(gameInput)
+            GameActionType.CHECK_BANK_ACCOUNT_BALANCE -> doCheckBankAccountBalance()
 
             GameActionType.SEARCH -> doSearch(gameInput)
-            GameActionType.SHOW_GOLD -> doShowGold()
+            GameActionType.CHECK_GOLD -> doShowGold()
             GameActionType.SHOW_EQUIPMENT -> doShowEquipment()
             GameActionType.SHOW_HEALTH -> doShowHealth()
             GameActionType.SHOW_INVENTORY -> doShowInventory()
+
+            GameActionType.LIST_ITEMS -> doListItems()
+            GameActionType.PRICE_ITEM -> doPriceItem(gameInput)
+
+            // assess monster situations
+            GameActionType.ASSESS -> doAssess(gameInput)
+
             GameActionType.QUIT -> Game.running = false
+
+            GameActionType.NONE -> doUnknown()
+
             else -> doUnknown()
         }
     }

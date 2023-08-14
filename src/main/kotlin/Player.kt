@@ -21,6 +21,11 @@ object Player {
     var gold = 0
     val goldString
         get() = "You have $gold gold."
+    var bankAccountBalance = 100
+    val bankAccountBalanceString
+        get() = "Your balance is $bankAccountBalance gold."
+
+
     val healthString
         get() = "${attributes.healthString}\n${attributes.magicString}"
     val inventoryString: String

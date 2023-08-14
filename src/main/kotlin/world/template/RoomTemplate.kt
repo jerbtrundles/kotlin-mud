@@ -1,10 +1,8 @@
 package world.template
 
+import Inventory
 import com.beust.klaxon.Json
-import world.Connection
-import world.Room
-import world.RoomShop
-import world.WorldCoordinates
+import world.*
 import world.template.ShopTemplates.templates
 
 class RoomTemplate(
@@ -15,30 +13,25 @@ class RoomTemplate(
     @Json(name = "room-description")
     val description: String,
     @Json(name = "room-connections")
-    val connections: List<Connection>
+    val connections: List<Connection>,
+    @Json(name = "room-is-bank")
+    val isBank: String = "false"
 ) {
     @Json(ignored = true)
     val coordinates = WorldCoordinates.parseFromString(coordinatesString)
 
     fun toRoom(): Room {
-        val template = templates.firstOrNull { shopTemplate ->
+        val shopTemplate = templates.firstOrNull { shopTemplate ->
             shopTemplate.coordinates == coordinates
         }
 
-        return if(template != null) {
-            RoomShop(
-                id = id,
-                coordinates = coordinates,
-                description = description,
-                connections = connections,
-                soldItemTemplates = template.soldItemTemplates.toMutableList()
-            )
+        return if(shopTemplate != null) {
+            // todo: fix to avoid passing in empty inventory; doesn't matter much either way
+            RoomShop(id, coordinates, description, connections, Inventory(), shopTemplate.soldItemTemplates)
+        } else if(isBank == "true") {
+            RoomBank(id, coordinates, description, connections)
         } else {
-            Room(
-                id = id,
-                coordinates = coordinates,
-                description = description,
-                connections = connections
+            Room(id, coordinates, description, connections
             )
         }
     }

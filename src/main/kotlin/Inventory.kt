@@ -1,3 +1,4 @@
+import item.ItemArmor
 import item.ItemBase
 import item.ItemWeapon
 
@@ -18,4 +19,7 @@ class Inventory(val items: MutableList<ItemBase> = mutableListOf()) {
     }
 
     fun getRandomWeapon() = getRandomTypedItem<ItemWeapon>()
+    fun getRandomArmor() = getRandomTypedItem<ItemArmor>()
+    fun getBestWeapon() = items.filterIsInstance<ItemWeapon>().maxByOrNull { it.power }
+    fun getBestArmor() = items.filterIsInstance<ItemArmor>().maxByOrNull { it.defense }
 }

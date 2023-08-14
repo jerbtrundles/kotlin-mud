@@ -19,13 +19,17 @@ enum class GameActionType {
     SELL_ITEM,
     PRICE_ITEM,
     LIST_ITEMS,
-    SHOW_GOLD,
+    CHECK_GOLD,
     SIT,
     STAND,
     KNEEL,
     ATTACK,
     SHOW_HEALTH,
     SEARCH,
+    DEPOSIT_MONEY,
+    WITHDRAW_MONEY,
+    CHECK_BANK_ACCOUNT_BALANCE,
+    ASSESS,
     QUIT;
 
     companion object {
@@ -46,9 +50,9 @@ enum class GameActionType {
                 "drink", "quaff" -> DRINK
                 "buy" -> BUY_ITEM
                 "sell" -> SELL_ITEM
-                "assess", "price" -> PRICE_ITEM
+                "price" -> PRICE_ITEM
                 "list" -> LIST_ITEMS
-                "gold" -> SHOW_GOLD
+                "gold" -> CHECK_GOLD
                 "sit" -> SIT
                 "stand" -> STAND
                 "kneel" -> KNEEL
@@ -56,6 +60,10 @@ enum class GameActionType {
                 "health" -> SHOW_HEALTH
                 "search" -> SEARCH
                 "quit", "exit", "q", "x" -> QUIT
+                "withdraw" -> WITHDRAW_MONEY
+                "deposit" -> DEPOSIT_MONEY
+                "balance", "check" -> CHECK_BANK_ACCOUNT_BALANCE
+                "assess" -> ASSESS
                 else -> NONE
             }
         }

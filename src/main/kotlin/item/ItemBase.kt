@@ -1,5 +1,7 @@
 package item
 
+import isVowel
+
 abstract class ItemBase(
     val name: String,
     val description: String,
@@ -9,9 +11,4 @@ abstract class ItemBase(
 ) {
     val sellValue = (value / 2).coerceAtLeast(1)
     val nameWithIndefiniteArticle = if(isVowel(name[0])) { "an $name" } else { "a $name" }
-
-    companion object {
-        const val vowels: String = "aeiou"
-        fun isVowel(c: Char) = vowels.contains(c)
-    }
 }

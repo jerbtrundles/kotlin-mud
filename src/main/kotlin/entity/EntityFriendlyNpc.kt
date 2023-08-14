@@ -15,7 +15,7 @@ class EntityFriendlyNpc(
 ) : EntityBase(
     name = name,
     keywords = listOf(name),
-    EntityAttributes.defaultNpc
+    attributes = EntityAttributes.defaultNpc
 ) {
     val nameWithJob = "$name the $job"
     val randomName
@@ -70,15 +70,19 @@ class EntityFriendlyNpc(
     }
 
     override suspend fun goLiveYourLifeAndBeFree(initialRoom: Room) {
-        currentRoom = initialRoom
-        initialRoom.addNpc(this)
+        doInit(initialRoom)
 
         while (Game.running) {
             // TODO: make this based off of something else
             //  e.g. entity speed, type
-            Common.delayRandom(from = Debug.npcDelayMin, to = Debug.npcDelayMax)
+            doDelay()
             doAction()
         }
+    }
+
+    override fun doInit(initialRoom: Room) {
+        currentRoom = initialRoom
+        initialRoom.addNpc(this)
     }
 
     override fun doAction() {

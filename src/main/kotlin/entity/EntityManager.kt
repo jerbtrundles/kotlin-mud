@@ -1,5 +1,6 @@
 package entity
 
+import debug.Debug
 import game.Game
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -14,11 +15,12 @@ object EntityManager {
         allNpcJobs = Common.parseArrayFromJson(c, "jobs.json")
     }
 
-    fun createNpc(): EntityFriendlyNpc =
-        EntityFriendlyNpc(
-            name = allNpcNames.random(),
-            job = allNpcJobs.random()
-        )
+    private fun createRandomNpc() = EntityFriendlyNpc(
+        name = allNpcNames.random(),
+        job = allNpcJobs.random()
+    )
+
+    private fun createRandomMonster() = EntityTemplates.monsterTemplates.random().create()
 
     suspend fun start() {
         val allMonsters = mutableListOf<EntityMonster>()
@@ -27,15 +29,15 @@ object EntityManager {
         coroutineScope {
             while (Game.running) {
                 Game.delay(5000)
-                removeSearchedMonsters(allMonsters)
+                launch { removeSearchedMonsters(allMonsters) }
                 Game.delay(5000)
 
-                if (allMonsters.size < Debug.maxMonsters) {
+                while (allMonsters.size < Debug.maxMonsters) { // if
                     if (allMonsters.size % 5 == 0) {
                         Debug.println("Total monsters: ${allMonsters.size}")
                     }
 
-                    val monster = EntityTemplates.monsterTemplates.random().create()
+                    val monster = createRandomMonster()
                     allMonsters.add(monster)
 
                     launch {
@@ -48,11 +50,11 @@ object EntityManager {
                         Debug.println("Total NPCs: ${allNpcs.size}")
                     }
 
-                    val npc = createNpc()
-                    allNpcs.add(npc)
+                    val randomNpc = createRandomNpc()
+                    allNpcs.add(randomNpc)
 
                     launch {
-                        npc.goLiveYourLifeAndBeFree(initialRoom = World.getRandomRoom())
+                        randomNpc.goLiveYourLifeAndBeFree(initialRoom = World.getRandomRoom())
                     }
                 }
             }
@@ -61,12 +63,14 @@ object EntityManager {
 
     private fun removeSearchedMonsters(allMonsters: MutableList<EntityMonster>) {
         // remove searched dead
-        val searched = allMonsters.filter { monster -> monster.hasBeenSearched }
+        val searched = allMonsters.filter { monster -> !monster.hasNotBeenSearched }
         if (searched.isNotEmpty()) {
-            // remove searched from room inventories
+            // remove from room
             searched.forEach { monster ->
+                Debug.println("EntityManager::removeSearchedMonsters() - removing monster: ${monster.name}, ${monster.currentRoom.coordinates}")
                 monster.currentRoom.monsters.remove(monster)
             }
+            // remove from global tracker
             allMonsters.removeAll(searched)
         }
     }

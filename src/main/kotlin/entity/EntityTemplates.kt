@@ -1,6 +1,6 @@
 package entity
 
-import com.beust.klaxon.Klaxon
+import debug.Debug
 
 object EntityTemplates {
     var  monsterTemplates = listOf<EntityMonsterTemplate>()
