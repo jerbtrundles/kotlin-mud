@@ -1,24 +1,55 @@
 package entity
 
+import Inventory
+import debug.Debug
 import game.Game
 import game.MovementDirection
-import item.ItemArmor
-import item.ItemWeapon
+import item.ItemBase
 import world.Connection
 import world.Room
-import world.World
 import kotlin.random.Random
 
 class EntityFriendlyNpc(
     name: String,
+    level: Int,
     val job: String
 ) : EntityBase(
     name = name,
+    level = level,
     keywords = listOf(name),
     attributes = EntityAttributes.defaultNpc
 ) {
-    val nameWithJob = "$name the $job"
-    val randomName
+    private val flavorTextArray = arrayOf(
+        "randomName gazes up at the sky.",
+        "randomName shuffles their feet.",
+        "randomName glances around.",
+        "randomName says \"quip\"",
+        "randomName rummages around in their pockets, looking for something."
+    )
+
+    private val flavorTextQuipArray = arrayOf(
+        "Nice weather today, isn't it?",
+        "My feet ache somethin' awful.",
+        "I'm a little sick. Don't get too close!",
+        "I found a lucky coin on the ground the other day.",
+        "Mrrrrrrr...."
+    )
+
+    fun flavorText(entity: EntityBase): String =
+        flavorTextArray.random()
+            .replace("randomName", entity.randomName)
+            .replace("quip", flavorTextQuipArray.random())
+
+    override val hostilesCount
+        get() = currentRoom.monsters.size
+    override val deadAndUnsearchedHostilesCount
+        get() = currentRoom.monsters.filter { it.isDead && it.hasNotBeenSearched }.size
+
+
+    // region strings
+    private val nameWithJob = "$name the $job"
+
+    override val randomName
         get() = when (Random.nextInt(0, 2)) {
             0 -> nameWithJob
             else -> name
@@ -39,45 +70,112 @@ class EntityFriendlyNpc(
     }
 
     override val deathString = "$nameWithJob dies."
+    override val sitString
+        get() = "$randomName sits down."
+    override val standString
+        get() = "$randomName stands up."
+    override val kneelString
+        get() = "$randomName kneels."
+
+    override fun putAwayString(item: ItemBase) =
+        "$randomName puts away their ${item.name}."
+
+    override fun equipString(item: ItemBase) =
+        "$randomName equips ${item.nameWithIndefiniteArticle}."
+
+    override fun removeString(item: ItemBase) =
+        "$randomName removes their ${item.name}."
+
     override val nameForCollectionString
-        get() = if (isDead) {
-            "$nameWithJob, who is dead"
-        } else {
-            nameWithJob
+        get() = when {
+            isDead -> "$nameWithJob (dead)"
+            posture == EntityPosture.KNEELING -> "$name (kneeling)"
+            posture == EntityPosture.SITTING -> "$name (sitting)"
+            else -> name
         }
 
-    companion object {
-        val flavorTextArray = arrayOf(
-            "randomName gazes up at the sky.",
-            "randomName shuffles their feet.",
-            "randomName glances around.",
-            "randomName says \"quip\"",
-            "randomName rummages around in their pockets, looking for something."
-        )
-
-        val flavorTextQuipArray = arrayOf(
-            "Nice weather today, isn't it?",
-            "My feet ache somethin' awful.",
-            "I'm a little sick. Don't get too close!",
-            "I found a lucky coin on the ground the other day.",
-            "Mrrrrrrr...."
-        )
-
-        fun flavorText(npc: EntityFriendlyNpc) =
-            flavorTextArray.random()
-                .replace("randomName", npc.randomName)
-                .replace("quip", flavorTextQuipArray.random())
+    override fun dropString(item: ItemBase) =
+        "$randomName drops ${item.nameWithIndefiniteArticle}."
+    override fun dropString(inventory: Inventory): String {
+        return ""
     }
 
-    override suspend fun goLiveYourLifeAndBeFree(initialRoom: Room) {
-        doInit(initialRoom)
+    override fun getString(item: ItemBase) =
+        "$randomName picks up ${item.nameWithIndefiniteArticle}."
+    // endregion
 
-        while (Game.running) {
-            // TODO: make this based off of something else
-            //  e.g. entity speed, type
-            doDelay()
-            doAction()
+    override fun doFinalCleanup() {
+        currentRoom.announce("The body of $nameWithJob crumbles to dust.")
+        currentRoom.npcs.remove(this)
+    }
+
+    override fun doSearchRandomUnsearchedDeadHostile() {
+        currentRoom.monsters.filter { it.isDead && it.hasNotBeenSearched }.randomOrNull()?.let { deadMonster ->
+            currentRoom.announce("$name searches the ${deadMonster.name}.")
+
+            deadMonster.weapon?.let {
+                currentRoom.inventory.items.add(it)
+                currentRoom.announce("The ${deadMonster.name} drops ${it.nameWithIndefiniteArticle}.")
+            }
+            deadMonster.armor?.let {
+                currentRoom.inventory.items.add(it)
+                currentRoom.announce("The ${deadMonster.name} drops ${it.nameWithIndefiniteArticle}.")
+            }
+
+            if(deadMonster.inventory.items.isNotEmpty()) {
+                currentRoom.inventory.items.addAll(deadMonster.inventory.items)
+                currentRoom.announce("The ${deadMonster.name} drops ${deadMonster.inventory.collectionString}.")
+            }
+
+            deadMonster.hasNotBeenSearched = false
         }
+    }
+
+    override fun calculateAttackPower() =
+        attributes.strength + (weapon?.power ?: 0) + Debug.npcAttackBuff
+
+    override fun doAttackRandomHostile() {
+        currentRoom.randomLivingMonsterOrNull()?.let { monster ->
+            // npc weapon
+            val weaponString = weapon?.name ?: "fists"
+            // npc attack
+            val attack = attributes.strength + (weapon?.power ?: 0)
+            // monster defense
+            val defense = monster.attributes.baseDefense
+            // resultant damage
+            val damage = (attack - defense).coerceAtLeast(0)
+
+            currentRoom.announce("$name swings at the ${monster.name} with their $weaponString.")
+
+            if (damage > 0) {
+                currentRoom.announce("They hit for $damage damage.")
+            } else {
+                currentRoom.announce("They miss!")
+            }
+
+            monster.attributes.currentHealth -= damage
+            if (monster.attributes.currentHealth <= 0) {
+                currentRoom.announce("The ${monster.name} dies.")
+
+                // TODO: npcs gain experience?
+                // experience += experience
+                // println("You've gained $experience experience.")
+            }
+        }
+    }
+
+    override suspend fun doDelay() {
+        // TODO: make this based off of something else
+        //  e.g. entity speed, type
+
+        // Debug.println("EntityFriendlyNpc::doDelay()")
+
+        Game.delayRandom(
+            min = Debug.npcDelayMin, max = Debug.npcDelayMax,
+            conditions = listOf(
+                ::hasNotBeenSearched
+            )
+        )
     }
 
     override fun doInit(initialRoom: Room) {
@@ -85,59 +183,53 @@ class EntityFriendlyNpc(
         initialRoom.addNpc(this)
     }
 
-    override fun doAction() {
-        if (weapon == null) {
-            prioritizeGettingWeapon()
-        } else if (armor == null) {
-            prioritizeGettingArmor()
+    override fun doIdle() {
+        TODO("Not yet implemented")
+    }
+
+    override fun doSpeakWith(entity: EntityBase) {
+        if (entity == this) {
+            currentRoom.announce("$randomName mumbles something to themselves.")
         } else {
-            normalBehavior()
+            currentRoom.announce("$randomName exchanges a few words with ${entity.name}.")
         }
     }
 
+    override fun doMove(newRoom: Room, connection: Connection) {
+        // Debug.println("EntityFriendlyNpc::doMove() - ${this.name} - move from ${currentRoom.coordinates} to ${newRoom.coordinates}")
+
+        // leaving
+        currentRoom.npcs.remove(this)
+        currentRoom.announce(departString(connection))
+        // move
+        currentRoom = newRoom
+        // arriving
+        currentRoom.addNpc(this)
+    }
+
     // region behaviors
-    private fun normalBehavior() {
-        when (Random.nextInt(10)) {
-            // 0 -> doGetRandomItemFromRoom()
-            0 -> doRandomMove()
-            1 -> doExchangeWordsWithNpc()
-            2 -> doSit()
-            3 -> doStand()
-            4, 5 -> doDropRandomItemFromInventory()
-            6 -> doFlavorText()
-            else -> doAttack()
+//    private fun normalBehavior() {
+//        when (Random.nextInt(10)) {
+    // 0 -> doGetRandomItemFromRoom()
+//            0 -> doRandomMove()
+//            1 -> doExchangeWordsWithNpc()
+//            2 -> doSit()
+//            3 -> doStand()
+//            4, 5 -> doDropRandomItemFromInventory()
+//            6 -> doFlavorText()
+//            else -> doAttack()
 //                6 -> doEquipWeapon()
 //                7 -> doEquipArmor()
 //                8 -> doRemoveWeapon()
 //                9 -> doRemoveArmor()
-            // else -> doDropRandomItemFromInventory()
-        }
-    }
-
-    private fun prioritizeGettingArmor() {
-        when (Random.nextInt(4)) {
-            0 -> doEquipArmor()
-            1 -> doRandomMove()
-            2 -> doGetRandomItemFromRoom()
-            3 -> doAttack()
-        }
-    }
-
-    private fun prioritizeGettingWeapon() {
-        when (Random.nextInt(3)) {
-            0 -> doEquipWeapon()
-            1 -> doRandomMove()
-            2 -> doGetRandomItemFromRoom()
-        }
-    }
+    // else -> doDropRandomItemFromInventory()
+//        }
+//    }
     // endregion
 
     // region actions
-    private fun doFlavorText() {
-        currentRoom.announce(flavorText(this))
-    }
 
-    private fun doAttack() {
+    override fun doAttack() {
         currentRoom.monsters.filter { monster -> !monster.isDead }.randomOrNull()?.let { monster ->
             val weaponString = weapon?.name ?: "fists"
             val attack = attributes.strength + (weapon?.power ?: 0)
@@ -155,102 +247,16 @@ class EntityFriendlyNpc(
             monster.takeDamage(damage)
         }
     }
-
-    private fun doEquipWeapon() {
-        if (weapon != null) {
-            return
-        }
-
-        inventory.getRandomTypedItem<ItemWeapon>()?.let { weaponToEquip ->
-            weapon = weaponToEquip
-            currentRoom.announce("$randomName equips ${weaponToEquip.nameWithIndefiniteArticle}.")
-        }
-    }
-
-    private fun doEquipArmor() {
-        if (armor != null) {
-            return
-        }
-
-        inventory.getRandomTypedItem<ItemArmor>()?.let { armorToEquip ->
-            armor = armorToEquip
-            currentRoom.announce("$randomName equips ${armorToEquip.nameWithIndefiniteArticle}.")
-        }
-    }
-
-    private fun doRemoveArmor() {
-        armor?.let {
-            currentRoom.announce("$randomName removes their ${it.name}.")
-            inventory.items.add(it)
-            armor = null
-        }
-    }
-
-    private fun doRemoveWeapon() {
-        weapon?.let {
-            currentRoom.announce("$randomName puts away their ${it.name}.")
-            inventory.items.add(it)
-            weapon = null
-        }
-    }
-
-    private fun doSit() {
-        if (posture != EntityPosture.SITTING) {
-            posture = EntityPosture.SITTING
-            currentRoom.announce("$randomName sits down.")
-        }
-    }
-
-    private fun doStand() {
-        if (posture != EntityPosture.STANDING) {
-            posture = EntityPosture.STANDING
-            currentRoom.announce("$randomName stands up.")
-        }
-    }
-
-    private fun doExchangeWordsWithNpc() {
-        val npc = currentRoom.npcs.random()
-        if (npc == this) {
-            currentRoom.announce("$randomName mumbles something to themselves.")
-        } else {
-            currentRoom.announce("$randomName exchanges a few words with ${npc.randomName}.")
-        }
-    }
-
-    private fun doGetRandomItemFromRoom() {
-        currentRoom.inventory.items.randomOrNull()?.let { item ->
-            inventory.items.add(item)
-            currentRoom.inventory.items.remove(item)
-
-            currentRoom.announce("$randomName picks up ${item.nameWithIndefiniteArticle}.")
-        }
-    }
-
-    private fun doDropRandomItemFromInventory() {
-        inventory.items.randomOrNull()?.let { item ->
-            currentRoom.inventory.items.add(item)
-            inventory.items.remove(item)
-
-            currentRoom.announce("$randomName drops ${item.nameWithIndefiniteArticle}.")
-        }
-    }
-
-    override fun doRandomMove() {
-        if (posture == EntityPosture.STANDING) {
-            val connection = currentRoom.connections.random()
-            val newRoom = World.getRoomFromCoordinates(connection.coordinates)
-
-            // leaving
-            currentRoom.npcs.remove(this)
-            currentRoom.announce(departString(connection))
-            // move
-            currentRoom = newRoom
-            // arriving
-            currentRoom.addNpc(this)
-
-            // if directional
-            // otherwise (The goblin goes through the gates.)
-        }
-    }
     // endregion
+
+    override fun isAlone() = currentRoom.npcs.size == 1 // self
+            && currentRoom.monsters.isEmpty()
+            && Player.currentRoom != currentRoom
+
+    override fun doChatter() {
+        currentRoom.announce(flavorText(this))
+    }
+
+    override fun doMumble() = currentRoom.announce("$name mumbles something to themselves.")
+
 }

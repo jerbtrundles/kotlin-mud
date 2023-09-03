@@ -1,19 +1,25 @@
 package entity.behavior
 
-import entity.EntityBase
-import javax.swing.text.html.parser.Entity
-
 class EntityPreference(
-    val situation: EntitySituation,
+    val situations: List<EntitySituation>,
     val action: EntityAction
 ) {
-    fun isInSituation(entityBase: EntityBase) = entityBase.isInSituation(situation)
-
+    constructor(situation: EntitySituation, action: EntityAction): this(listOf(situation), action)
     companion object {
+        val defaultPreferenceAttackPlayer = EntityPreference(EntitySituation.SAME_ROOM_AS_PLAYER, EntityAction.ATTACK_PLAYER)
         val defaultPreferenceBeAlone = EntityPreference(EntitySituation.NOT_ALONE, EntityAction.MOVE)
-        val defaultPreferenceFindBetterWeapon = EntityPreference(EntitySituation.FOUND_BETTER_WEAPON, EntityAction.GET_WEAPON)
-        val defaultPreferenceFindBetterArmor = EntityPreference(EntitySituation.FOUND_BETTER_ARMOR, EntityAction.GET_ARMOR)
         val defaultPreferenceSit = EntityPreference(EntitySituation.NOT_SITTING, EntityAction.SIT)
+
+        val defaultPreferenceFindAnyWeaponIfNoneEquipped = EntityPreference(
+            listOf(
+                EntitySituation.NO_EQUIPPED_WEAPON,
+                EntitySituation.CURRENT_ROOM_CONTAINS_WEAPON
+            ),
+            EntityAction.FIND_ANY_WEAPON)
+        val defaultPreferenceSearchDeadHostile = EntityPreference(EntitySituation.ANY_UNSEARCHED_DEAD_HOSTILES, EntityAction.SEARCH_RANDOM_UNSEARCHED_DEAD_HOSTILE)
+        val defaultPreferenceAttackHostile = EntityPreference(EntitySituation.ANY_HOSTILES, EntityAction.ATTACK_RANDOM_HOSTILE)
+        val defaultPreferenceFindBetterWeapon = EntityPreference(EntitySituation.FOUND_BETTER_WEAPON, EntityAction.GET_RANDOM_BETTER_WEAPON)
+        val defaultPreferenceFindBetterArmor = EntityPreference(EntitySituation.FOUND_BETTER_ARMOR, EntityAction.GET_RANDOM_BETTER_ARMOR)
     }
 }
 

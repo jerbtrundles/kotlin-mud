@@ -7,8 +7,8 @@ import kotlinx.coroutines.launch
 import world.World
 
 object EntityManager {
-    var allNpcNames = listOf<String>()
-    var allNpcJobs = listOf<String>()
+    private var allNpcNames = listOf<String>()
+    private var allNpcJobs = listOf<String>()
 
     fun load(c: Class<() -> Unit>) {
         allNpcNames = Common.parseArrayFromJson(c, "names.json")
@@ -17,6 +17,7 @@ object EntityManager {
 
     private fun createRandomNpc() = EntityFriendlyNpc(
         name = allNpcNames.random(),
+        level = 1,
         job = allNpcJobs.random()
     )
 
@@ -30,6 +31,7 @@ object EntityManager {
             while (Game.running) {
                 Game.delay(5000)
                 launch { removeSearchedMonsters(allMonsters) }
+                launch { removeSearchedNpcs(allNpcs) }
                 Game.delay(5000)
 
                 while (allMonsters.size < Debug.maxMonsters) { // if
@@ -45,7 +47,7 @@ object EntityManager {
                     }
                 }
 
-                if (allNpcs.size < Debug.maxNpcs) {
+                while (allNpcs.size < Debug.maxNpcs) {
                     if (allNpcs.size % 5 == 0) {
                         Debug.println("Total NPCs: ${allNpcs.size}")
                     }
@@ -64,14 +66,12 @@ object EntityManager {
     private fun removeSearchedMonsters(allMonsters: MutableList<EntityMonster>) {
         // remove searched dead
         val searched = allMonsters.filter { monster -> !monster.hasNotBeenSearched }
-        if (searched.isNotEmpty()) {
-            // remove from room
-            searched.forEach { monster ->
-                Debug.println("EntityManager::removeSearchedMonsters() - removing monster: ${monster.name}, ${monster.currentRoom.coordinates}")
-                monster.currentRoom.monsters.remove(monster)
-            }
-            // remove from global tracker
-            allMonsters.removeAll(searched)
-        }
+        allMonsters.removeAll(searched)
+    }
+
+    private fun removeSearchedNpcs(allNpcs: MutableList<EntityFriendlyNpc>) {
+        // remove searched dead
+        val searched = allNpcs.filter { npc -> !npc.hasNotBeenSearched }
+        allNpcs.removeAll(searched)
     }
 }

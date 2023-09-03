@@ -5,6 +5,7 @@ import entity.EntityFriendlyNpc
 import entity.EntityMonster
 import game.Game
 import game.GameActionType
+import item.ItemWeapon
 import java.util.UUID
 
 open class Room(
@@ -50,7 +51,7 @@ open class Room(
         get() = if (inventory.items.isEmpty()) {
             ""
         } else {
-            "You also see $inventory.\n"
+            "You also see ${inventory.collectionString}.\n"
         }
 
     override fun toString() = "Room: $coordinates"
@@ -81,12 +82,11 @@ open class Room(
         }
     }
 
-    fun findLivingMonster(keyword: String): EntityMonster? =
-        monsters.firstOrNull { entity ->
-            (entity.name == keyword
-                    || entity.keywords.contains(keyword))
-                    && !entity.isDead
-        }
+    fun randomLivingMonsterOrNull() = monsters.filter { !it.isDead }.randomOrNull()
+    fun randomLivingNpcOrNull() = npcs.filter { !it.isDead }.randomOrNull()
+
+    fun findLivingMonster(keyword: String) = monsters.firstOrNull { entity -> entity.matchesKeyword(keyword) && !entity.isDead }
+
 
     fun findDeadMonster(keyword: String): EntityMonster? =
         monsters.firstOrNull { monster ->
@@ -102,8 +102,14 @@ open class Room(
                     || monster.name == keyword
         }
 
+    val containsWeapon
+        get() = inventory.items.any { it is ItemWeapon }
+
     override fun equals(other: Any?) = (uuid == (other as? Room)?.uuid)
     override fun hashCode() = uuid.hashCode()
+    fun findDeadAndUnsearchedMonster(suffix: String) =
+        monsters.firstOrNull { it.matchesKeyword(suffix) && it.isDead && it.hasNotBeenSearched }
+
 }
 
 // find an item, item comes with fluff text, maybe a story

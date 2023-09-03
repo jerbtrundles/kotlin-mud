@@ -27,6 +27,6 @@ class ItemContainer(
     get() = if (inventory.items.isEmpty()) {
             "You don't see anything in the $name."
         } else {
-            "In the $name, you see $inventory."
+            "In the $name, you see ${inventory.collectionString}."
         }
 }

@@ -358,15 +358,20 @@ object MyViewModel {
     }
 
     private fun doSearch(gameInput: GameInput) {
-        val deadMonster = Player.currentRoom.findDeadMonster(gameInput.suffix)
+        Player.currentRoom.findDeadAndUnsearchedMonster(gameInput.suffix)?.let { deadMonster ->
 
-        deadMonster?.run {
-            // TODO: inventory
-            hasNotBeenSearched = false
+            Player.currentRoom.announce("You search the ${deadMonster.name}.")
 
-            println("You find $gold gold on the $name.")
-            Player.gold += gold
+            println("You find ${deadMonster.gold} gold on the ${deadMonster.name}.")
+            Player.gold += deadMonster.gold
             println(Player.goldString)
+
+            if (deadMonster.inventory.items.isNotEmpty()) {
+                Player.currentRoom.inventory.items.addAll(deadMonster.inventory.items)
+                Player.currentRoom.announce("The ${deadMonster.name} drops ${deadMonster.inventory.collectionString}.")
+            }
+
+            deadMonster.hasNotBeenSearched = false
         } ?: doUnknown()
     }
     // endregion

@@ -32,6 +32,6 @@ object Player {
         get() = if (inventory.items.isEmpty()) {
             "You aren't carrying anything."
         } else {
-            "You are carrying $inventory."
+            "You are carrying ${inventory.collectionString}."
         }
 }

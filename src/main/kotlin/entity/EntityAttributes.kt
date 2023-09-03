@@ -1,7 +1,6 @@
 package entity
 
 import com.beust.klaxon.Json
-import kotlin.math.max
 
 class EntityAttributes(
     var strength: Int = 20,
@@ -31,13 +30,13 @@ class EntityAttributes(
     companion object {
         val defaultNpc
             get() = EntityAttributes(
-                strength = 3,
-                intelligence = 3,
-                vitality = 3,
-                speed = 3,
-                baseDefense = 3,
-                maximumHealth = 3,
-                maximumMagic = 3
+                strength = 5,
+                intelligence = 5,
+                vitality = 5,
+                speed = 5,
+                baseDefense = 5,
+                maximumHealth = 30,
+                maximumMagic = 10
             )
     }
 }

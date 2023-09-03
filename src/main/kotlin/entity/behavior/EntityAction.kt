@@ -1,13 +1,23 @@
 package entity.behavior
 
 enum class EntityAction {
-    FIND_WEAPON,
+    ATTACK_PLAYER,
+    ATTACK_RANDOM_HOSTILE,
+    CHATTER,
+    FIND_ANY_WEAPON,
     FIND_EMPTY_ROOM,
-    SIT,
-    HEAL_SELF,
-    STAND,
-    NONE,
-    MOVE,
+    FIND_WEAPON,
+    GET_ARMOR,
+    GET_RANDOM_BETTER_ARMOR,
+    GET_RANDOM_BETTER_WEAPON,
+    GET_RANDOM_ITEM,
     GET_WEAPON,
-    GET_ARMOR
+    HEAL_SELF,
+    IDLE,
+    KNEEL,
+    MOVE,
+    NONE,
+    SEARCH_RANDOM_UNSEARCHED_DEAD_HOSTILE,
+    SIT,
+    STAND,
 }

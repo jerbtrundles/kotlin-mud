@@ -1,10 +1,7 @@
 package entity
 
-import com.beust.klaxon.Json
-
 class EntityMonsterTemplate(
     val name: String,
-    // level and attributes remain constant
     val level: Int,
     val attributes: EntityAttributes,
     val keywords: List<String>,

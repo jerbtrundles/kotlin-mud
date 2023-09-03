@@ -24,9 +24,14 @@ object World {
         return regions[coordinates.region].subregions[coordinates.subregion].rooms[coordinates.room]
     }
 
-    fun getRandomRoom() = regions.random()
-        .subregions.random()
-        .rooms.random()
+    val allRooms
+        get() = regions.flatMap { region ->
+            region.subregions.flatMap { subregion ->
+                subregion.rooms
+            }
+        }
+
+    fun getRandomRoom() = allRooms.random()
 
     fun load(c: Class<() -> Unit>) {
         val regionTemplates = Common.parseArrayFromJson<RegionTemplate>(c, "world.json")

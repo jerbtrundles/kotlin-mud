@@ -1,32 +1,64 @@
 package entity
 
+import Inventory
 import debug.Debug
-import entity.behavior.EntityAction
-import entity.behavior.EntitySituation
 import game.Game
 import game.MovementDirection
+import item.ItemBase
 import withIndefiniteArticle
 import world.Connection
 import world.Room
-import world.World
 
 class EntityMonster(
     name: String,
+    level: Int,
     keywords: List<String>,
-    // level and attributes remain constant
-    val level: Int,
     attributes: EntityAttributes,
     val experience: Int,
     val gold: Int
-) : EntityBase(name, keywords, attributes) {
+) : EntityBase(name, level, keywords, attributes) {
+    override val randomName = name
+    override val hostilesCount
+        get() = currentRoom.npcs.size + if (Player.currentRoom == currentRoom) {
+            1
+        } else {
+            0
+        }
+    override val deadAndUnsearchedHostilesCount
+        get() = currentRoom.npcs.filter { it.isDead && it.hasNotBeenSearched }.size
 
     override val nameForStory = "The $name"
     override val nameForCollectionString
-        get() = if (isDead) {
-            "dead $name"
-        } else {
-            name
+        get() = when {
+            isDead && !hasNotBeenSearched -> "dead $name (searched)"
+            isDead -> "dead $name"
+            posture == EntityPosture.KNEELING -> "$name (kneeling)"
+            posture == EntityPosture.SITTING -> "$name (sitting)"
+            else -> name
         }
+
+    override val sitString
+        get() = "The $name sits down."
+    override val standString
+        get() = "The $name stands up."
+    override val kneelString
+        get() = "The $name kneels."
+
+    override fun putAwayString(item: ItemBase) =
+        "The $name puts away their ${item.name}."
+
+    override fun equipString(item: ItemBase) =
+        "The $name equips ${item.nameWithIndefiniteArticle}."
+
+    override fun removeString(item: ItemBase) =
+        "The $name removes their ${item.name}."
+
+    override fun dropString(item: ItemBase) =
+        "The $name drops ${item.nameWithIndefiniteArticle}."
+    override fun dropString(inventory: Inventory) =
+        "The $name drops ${inventory.collectionString}."
+    override fun getString(item: ItemBase) =
+        "The $name picks up ${item.nameWithIndefiniteArticle}."
 
     override val arriveString = "${name.withIndefiniteArticle(capitalized = true)} has arrived."
     override fun departString(connection: Connection): String {
@@ -46,17 +78,73 @@ class EntityMonster(
 
     override val deathString = "The $name dies."
 
-    override suspend fun goLiveYourLifeAndBeFree(initialRoom: Room) {
-        doInit(initialRoom)
-
-        while (hasNotBeenSearched && Game.running) {
-            doDelay()
-            doAction()
-        }
-
-        Debug.println("EntityMonster::goLiveYourLifeAndBeFree() - $name is dead, has been searched, and will now decay")
-        doDecay()
+    override fun doFinalCleanup() {
+        currentRoom.announce("The body of the $name crumbles to dust.")
+        currentRoom.monsters.remove(this)
     }
+
+    override fun doAttack() {
+        TODO("Not yet implemented")
+    }
+
+    override fun calculateAttackPower() =
+        attributes.strength + (weapon?.power ?: 0) - Debug.monsterAttackDebuff // debug monster attack debuff
+
+    override fun doSearchRandomUnsearchedDeadHostile() {
+        currentRoom.npcs.filter { it.isDead && it.hasNotBeenSearched }.randomOrNull()?.let { deadNpc ->
+            currentRoom.announce("The $name searches the corpse of ${deadNpc.name}.")
+
+            deadNpc.weapon?.let {
+                currentRoom.inventory.items.add(it)
+                currentRoom.announce("${deadNpc.name} drops ${it.nameWithIndefiniteArticle}.")
+            }
+            deadNpc.armor?.let {
+                currentRoom.inventory.items.add(it)
+                currentRoom.announce("${deadNpc.name} drops ${it.nameWithIndefiniteArticle}.")
+            }
+
+            if(deadNpc.inventory.items.isNotEmpty()) {
+                currentRoom.inventory.items.addAll(deadNpc.inventory.items)
+                currentRoom.announce("${deadNpc.name} drops ${deadNpc.inventory.collectionString}.")
+            }
+
+            deadNpc.hasNotBeenSearched = false
+        }
+    }
+
+    override fun doAttackRandomHostile() {
+        currentRoom.randomLivingNpcOrNull()?.let { npc ->
+            // monster weapon
+            val weaponString = weapon?.name ?: "fists"
+            // monster attack
+            val attack = calculateAttackPower()
+            // npc defense
+            val defense = npc.attributes.baseDefense
+            // resultant damage
+            val damage = (attack - defense).coerceAtLeast(0)
+
+            currentRoom.announce("The $name swings at the ${npc.name} with their $weaponString.")
+
+            if (damage > 0) {
+                currentRoom.announce("They hit for $damage damage.")
+            } else {
+                currentRoom.announce("They miss!")
+            }
+
+            npc.attributes.currentHealth -= damage
+            if (npc.attributes.currentHealth <= 0) {
+                currentRoom.announce("${npc.name} dies.")
+
+                // TODO: monsters gain experience?
+                // experience += experience
+                // currentRoom.announce("You've gained $experience experience.")
+            }
+        }
+    }
+
+    override fun isAlone() = currentRoom.monsters.size == 1 // self
+            && currentRoom.npcs.isEmpty()
+            && Player.currentRoom != currentRoom
 
     override fun doInit(initialRoom: Room) {
         // set initial room and add self
@@ -66,91 +154,36 @@ class EntityMonster(
         Debug.println("EntityMonster::doInit() - adding ${this.name} to ${currentRoom.coordinates}")
     }
 
-    override fun doAction() {
-        if (isDead) {
-            return
-        }
+    override suspend fun doDelay() {
+        // TODO: make this based off of something else
+        //  e.g. entity speed, type
 
-        val action = behavior.getNextAction(this)
-        Debug.println("EntityMonster::doAction() - $action")
-
-        when(action) {
-            EntityAction.MOVE -> doRandomMove()
-            EntityAction.SIT -> doSit()
-            EntityAction.STAND -> doStand()
-            EntityAction.GET_WEAPON -> doGetRandomWeapon()
-            EntityAction.GET_ARMOR -> doGetRandomArmor()
-            else -> doNothing()
-        }
+        // Debug.println("EntityMonster::doDelay()")
+        Game.delayRandom(
+            min = Debug.monsterDelayMin, max = Debug.monsterDelayMax,
+            conditions = listOf(
+                ::hasNotBeenSearched
+            )
+        )
     }
 
-    private fun doGetRandomArmor() {
-        currentRoom.inventory.getRandomArmor()?.let {new ->
-            armor?.let { old ->
-                currentRoom.announce("The $name drops ${old.nameWithIndefiniteArticle}.")
-                currentRoom.inventory.items.add(old)
-            }
-
-            armor = new
-            currentRoom.announce("The $name picks up ${new.nameWithIndefiniteArticle}.")
-        } ?: {
-            Debug.println("EntityMonster::doGetRandomArmor() - no armor in current room")
-            doNothing()
-        }
+    override fun doIdle() {
+        // TODO: other idle actions
+        Debug.println("EntityMonster::doIdle()")
+        doNothing()
     }
 
-    private fun doGetRandomWeapon() {
-        currentRoom.inventory.getRandomWeapon()?.let {new ->
-            weapon?.let { old ->
-                currentRoom.announce("The $name drops ${old.nameWithIndefiniteArticle}.")
-                currentRoom.inventory.items.add(old)
-            }
-
-            weapon = new
-            currentRoom.announce("The $name picks up ${new.nameWithIndefiniteArticle}.")
-        } ?: {
-            Debug.println("EntityMonster::doGetRandomWeapon() - no weapon in current room")
-            doNothing()
-        }
-    }
-
-    private fun doSit() {
-        if(posture != EntityPosture.SITTING) {
-            posture = EntityPosture.SITTING
-            currentRoom.announce("The $name sits down.")
+    override fun doSpeakWith(entity: EntityBase) {
+        if (entity == this) {
+            doMumble()
         } else {
-            Debug.println("EntityMonster::doSit() - already sitting")
-            doNothing()
+            // TODO: separate npc from monster
+            currentRoom.announce("The $name exchanges a few words with ${entity.name}.")
         }
     }
 
-    private fun doNothing() {
-        Debug.println("EntityMonster::doNothing()")
-    }
 
-    private fun doStand() {
-        if(posture != EntityPosture.STANDING) {
-            Debug.println("EntityMonster::doStand()")
-            posture = EntityPosture.STANDING
-            currentRoom.announce("The $name stands up.")
-        } else {
-            Debug.println("EntityMonster::doStand() - already standing")
-            doNothing()
-        }
-    }
-
-    override fun doRandomMove() {
-        if(posture != EntityPosture.STANDING) {
-            Debug.println("EntityMonster::doRandomMove() - need to stand")
-            doStand()
-        } else {
-            val connection = currentRoom.connections.random()
-            val newRoom = World.getRoomFromCoordinates(connection.coordinates)
-            doMove(newRoom, connection)
-        }
-    }
-
-    private fun doMove(newRoom: Room, connection: Connection) {
+    override fun doMove(newRoom: Room, connection: Connection) {
         // debug.Debug.println("EntityMonster::doRandomMove() - ${this.name} - move from ${currentRoom.coordinates} to ${newRoom.coordinates}")
 
         // leaving
@@ -162,9 +195,9 @@ class EntityMonster(
         currentRoom.addMonster(this)
     }
 
-    fun assessSituations() {
-        EntitySituation.values().forEach { situation ->
-            Game.println("$situation: ${isInSituation(situation)}")
-        }
+    override fun doChatter() {
+        doMumble()
     }
+
+    override fun doMumble() = currentRoom.announce("The $name mumbles something to themselves.")
 }

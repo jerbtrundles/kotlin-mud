@@ -3,7 +3,7 @@ package entity
 import debug.Debug
 
 object EntityTemplates {
-    var  monsterTemplates = listOf<EntityMonsterTemplate>()
+    var monsterTemplates = listOf<EntityMonsterTemplate>()
 
     fun load(c: Class<() -> Unit>) {
         loadMonsterTemplates(c)

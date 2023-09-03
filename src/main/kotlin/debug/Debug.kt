@@ -4,21 +4,23 @@ import item.template.ItemTemplates
 import world.World
 
 object Debug {
-    private const val debugging = true
+    private const val debugging = false
 
-    const val maxNpcs = 1
-    const val maxMonsters = 1
-    const val npcDelayMin = 500
-    const val npcDelayMax = 1000
+    const val maxNpcs = 5
+    const val maxMonsters = 5
+    const val npcDelayMin = 1000
+    const val npcDelayMax = 2000
     const val monsterDelayMin = 2000
     const val monsterDelayMax = 4000
     const val monsterMaxLevel = 5
-    private const val initialWeapons = 20
-    private const val initialArmor = 20
-    private const val initialJunk = 5
-    private const val initialFood = 20
-    private const val initialDrink = 20
-    private const val initialContainer = 3
+    const val monsterAttackDebuff = 0
+    const val npcAttackBuff = 0
+    private const val initialWeapons = 5
+    private const val initialArmor = 5
+    private const val initialJunk = 0
+    private const val initialFood = 0
+    private const val initialDrink = 0
+    private const val initialContainer = 0
 
     fun println(str: String) {
         if(debugging) {
