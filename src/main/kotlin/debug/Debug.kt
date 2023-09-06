@@ -1,23 +1,29 @@
 package debug
 
-import item.template.ItemTemplates
-import world.World
+import engine.entity.EntityBase
+import engine.entity.behavior.EntitySituation
+import engine.game.Game
+import engine.item.template.ItemTemplates
+import engine.world.World
 
 object Debug {
+    private class Level
     private const val debugging = false
 
-    const val maxNpcs = 5
-    const val maxMonsters = 5
-    const val npcDelayMin = 1000
-    const val npcDelayMax = 2000
-    const val monsterDelayMin = 2000
+    const val valuableItemMinimumValue = 200
+    const val maxNpcs = 10
+    const val maxMonsters = 6
+    const val npcDelayMin = 2000
+    const val npcDelayMax = 3000
+    const val monsterDelayMin = 3000
     const val monsterDelayMax = 4000
     const val monsterMaxLevel = 5
     const val monsterAttackDebuff = 0
     const val npcAttackBuff = 0
-    private const val initialWeapons = 5
-    private const val initialArmor = 5
+    private const val initialWeapons = 20
+    private const val initialArmor = 20
     private const val initialJunk = 0
+    private const val initialExpensiveJunk = 10
     private const val initialFood = 0
     private const val initialDrink = 0
     private const val initialContainer = 0
@@ -29,10 +35,16 @@ object Debug {
     }
 
     fun init() {
-        addItemsToRandomRooms()
+        addRandomItemsToRandomRooms()
+        addExpensiveJunk()
     }
 
-    private fun addItemsToRandomRooms() {
+    private fun addExpensiveJunk() {
+        repeat(initialExpensiveJunk) {
+            ItemTemplates.junk[0].createItemAt(World.getRandomRoom())
+        }
+    }
+    private fun addRandomItemsToRandomRooms() {
         repeat(initialWeapons) {
             ItemTemplates.weapons.random().createItemAt(World.getRandomRoom())
         }
@@ -50,6 +62,12 @@ object Debug {
         }
         repeat(initialContainer) {
             ItemTemplates.containers.random().createItemAt(World.getRandomRoom())
+        }
+    }
+
+    fun assessSituations(entity: EntityBase) {
+        EntitySituation.values().forEach { situation ->
+            Game.println("$situation: ${entity.isInSituation(situation)}")
         }
     }
 }

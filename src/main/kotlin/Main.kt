@@ -1,11 +1,12 @@
 import debug.Debug
-import entity.EntityManager
-import entity.EntityTemplates
-import game.Game
-import item.template.ItemTemplates
+import engine.player.MyViewModel
+import engine.entity.EntityManager
+import engine.entity.EntityTemplates
+import engine.game.Game
+import engine.item.template.ItemTemplates
 import kotlinx.coroutines.*
-import world.World
-import world.template.ShopTemplates
+import engine.world.World
+import engine.world.template.ShopTemplates
 
 fun main() {
     init()
